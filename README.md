@@ -47,11 +47,24 @@ World is Fair currently checks for farmed votes offchain after voting closes. A 
 | | |
 | :- | :- |
 | Chain | Robinhood Chain mainnet, chain id 4663 |
-| Equalship | set after deploy |
+| Equalship | [`0x3B5598d1bEBfeDF9a8E19526F728e3184a5F6A92`](https://robinhoodchain.blockscout.com/address/0x3B5598d1bEBfeDF9a8E19526F728e3184a5F6A92) |
 | USDG | `0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168` |
 | $WIF | `0x5173b8eA6923c2d40267890D45C46a3480954773` |
 | Uniswap SwapRouter02 | `0xCaf681a66D020601342297493863E78C959E5cb2` |
 | Uniswap QuoterV2 | `0x33e885eD0Ec9bF04EcfB19341582aADCb4c8A9E7` |
+| Multicall3 | `0xcA11bde05977b3631167028862bE2a173976CA11` |
+
+Live app: [equalship.vercel.app](https://equalship.vercel.app)
+
+### Mainnet transactions
+
+| What | Transaction |
+| :- | :- |
+| Deploy Equalship | [`0xd07ee961...`](https://robinhoodchain.blockscout.com/tx/0xd07ee96119a275617de1081b1e0814c4a5e8f4091f9113cd0a76a6e886db4177) |
+| Approve $WIF for the bond | [`0x856935fb...`](https://robinhoodchain.blockscout.com/tx/0x856935fb0ae8b11f6159f02f2610662ceae1fbb5b64b9c4e092b97b6b5f7e7b3) |
+| Approve USDG | [`0x2152eb8b...`](https://robinhoodchain.blockscout.com/tx/0x2152eb8be9b2c3b65927c6cf64d5ce56c8053eb5cf0b96262dcd5c237930a2d4) |
+| Create circle #0 and lock 1,000 $WIF | [`0x027a66c8...`](https://robinhoodchain.blockscout.com/tx/0x027a66c86c2ea7db6dc4be3ce848ff0e6afffec7ed80043271e4e6f83b6cf129) |
+| First save: 1 USDG buys NVDA and SPY into the member's wallet | [`0xe95d12f9...`](https://robinhoodchain.blockscout.com/tx/0xe95d12f9a850b27e80700a42045af21b669f14fa5b77e4f7fe137021e967ea2a) |
 
 Stock Token addresses come from `api.robinhood.com/rhj/assets`. Pool fee tiers were picked from the deepest USDG pool for each token on 7 Nov 2026.
 
