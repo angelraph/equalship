@@ -1,99 +1,112 @@
-# Chronos Alpha: Self-Improving Autonomous AI Crypto Strategy Lab
+# Equalship
 
-> **Chronos Alpha is an autonomous AI quant research engine that continuously generates, evaluates, and optimizes trading strategies using a closed-loop reinforcement system. It simulates market behavior, explains every trade decision, and automatically mutates underperforming strategies until performance thresholds are achieved.**
+Save together, own together.
 
-### 🧠 The Core Thesis: "The Junior Quant Analyst That Never Sleeps"
-Instead of a static trading bot running fixed code, Chronos Alpha behaves like an autonomous quantitative analyst. It writes strategy logic, backtests it against live historical volatility, inspects individual trade justifications, identifies weak returns, and mutates its own indicator thresholds until it satisfies deployment criteria.
+Equalship is a savings circle on Robinhood Chain. A group of friends agree on an amount, put that much USDG in every week, and each payment buys a basket of Stock Tokens straight into each member's own wallet. $WIF holds the group together: you bond it to join, you lose part of it when you skip a week, you burn it to vote on the basket, and a fee on every payment buys it back and burns it.
 
----
+Built for the World is Flat hackathon.
 
-## 🟦 Hackathon Submission Thesis (Four-Part Structure)
+## The problem
 
-### 1. Problem Statement
-Algorithmic trading has long been gated behind advanced coding frameworks and math modeling, shutting out everyday crypto traders. Furthermore, existing AI trading agents are static—they run fixed strategies that cannot learn from live market performance or adapt to changing volatility regimes. Judges are looking for **explainable reasoning** and **verifiable executions** rather than black-box bots.
+Most people never start investing because the first step is lonely and easy to put off. Savings circles (tontines, susu, chit funds, ajo) have solved that for generations in places where banks did not: you save because the group expects you to. Robinhood Chain now has Stock Tokens that anyone in an eligible region can hold in a wallet. Equalship puts the two together.
 
+For $WIF, the problem is the opposite. Its one proven use is voting on World is Fair. Most other hackathon projects use it as a stake in a bet. Equalship gives it a job that repeats every week for as long as people keep saving.
 
-### 2. Solution: Self-Improving Quant Loop
-Chronos Alpha closes the loop by connecting trade execution, backtesting, and performance evaluations:
-* **AI Quant Research Loop**: 
-  ```
-  [Conversation Guide] ➔ [Neural Strategy Generation] ➔ [180-Day Volatility Backtest] 
-                                                                     │
-  [Self-Optimization] 🧠 [AI Quantitative Evaluation & Verdict] 🎪──────┘
-  ```
-* **AI Trade Reason Engine**: Explains the exact indicators (RSI, SMAs, volume spikes) that triggered every simulated or live execution, scoring confidence levels.
-* **AI Strategy Evaluator (Phase 4)**: Automatically runs post-backtest multi-variable grading to score the strategy's quality (0-100), issue a deployment verdict, and prescribe specific mathematical improvements (e.g., shifting take-profits, adding confirmations).
-* **Genetic Strategy Evolution**: Feeds the Evaluator's mutations back into the generator parameters side-by-side to continuously breed higher-performing variants.
-* **Verifiable Agent Feed**: Logs execution histories directly to a public ledger, satisfying the strict hackathon live-trading verification guidelines.
+## How it works
 
-### 3. Architecture & Technical Design
-The platform uses a modular, deployment-ready stack:
-* **Next.js & TypeScript**: Core frontend workspace and API routes.
-* **TailwindCSS**: Premium dark-mode glassmorphic interface.
-* **Recharts**: Advanced dual-axis charting displaying balances, spot prices, and buy/sell execution markers.
-* **Supabase / Local Fallback**: Seamless database/auth state. If credentials are missing, the system automatically falls back to browser-based LocalStorage caches, remaining fully functional out-of-the-box.
-* **OpenAI API / Local AI Fallback**: Translates natural prompts into structured trade indicators.
+1. **Start or join a circle.** The circle sets the amount (from 1 USDG), the period (hourly for demos, daily, weekly, every two weeks), the $WIF bond, the slash rate, and a basket of up to five assets.
+2. **Bond $WIF.** Joining locks the bond. A friend can pay it for you with `joinFor`, so someone with no $WIF can still start.
+3. **Save every period.** `contribute` takes your USDG, keeps a 1% fee, and swaps the rest on Uniswap v3 into each basket asset with your wallet as the recipient. The contract never holds your Stock Tokens.
+4. **Keep the streak.** Each paid period adds to your streak. When a period closes unpaid, anyone can call `slash`. Part of the bond is taken: half is burned, half is shared by the members who stayed.
+5. **Vote on the basket.** Members propose a new basket and vote by burning $WIF, 1 $WIF per vote. A proposal passes if more $WIF is burned for it than against it and at least half the members vote yes.
+6. **Burn.** A daily job swaps the collected fees for $WIF along USDG, WETH, $WIF and sends it to `0x...dEaD`.
 
-### 4. Verifiable Execution & Results
-This submission includes **two reproducible Node.js terminal scripts** to prove execution integrity:
-1. **Interactive CLI Backtester (`scripts/backtest-cli.js`)**: Evaluates parameters directly in the terminal, printing an ASCII performance chart and the **AI strategy health verdict** (powered by `ai/strategy-evaluator.js`).
-2. **Bitget API Paper Trader (`scripts/bitget-paper-trader.js`)**: Fetches spot tickers (querying the public Bitget Spot Market API) and logs trades directly to `public/paper_trading_log.json` containing the AI Reason Engine output.
+## The flywheel
 
----
-
-## 🚀 Getting Started
-
-### 📋 Prerequisites
-Ensure you have **Node.js (v18+)** installed. Add the node binary path if running in a sandboxed shell.
-
-### 🔧 Installation
-1. Clone the repository and navigate to the project directory:
-   ```bash
-   git clone https://github.com/angelraph/chronos-alpha.git
-   cd chronos-alpha
-   ```
-2. Install dependencies:
-   ```bash
-   npm install --legacy-peer-deps
-   ```
-
-### 💻 Running the Web Application
-1. Run the local development server:
-   ```bash
-   npm run dev
-   ```
-2. Open [http://localhost:3000](http://localhost:3000) in your browser.
-3. Access immediately using **"ENTER PUBLIC GUEST DEMO MODE"** to inspect the live agent trading feed and run strategy compilations!
-
----
-
-## 🛠 Verifying CLI Tools & Paper Trading Logs
-
-### 1. Run CLI Backtests in Terminal
-Inspect strategy logic directly from the command line using our ASCII quant engine:
-```bash
-node scripts/backtest-cli.js --market BTC --style Trend --risk Medium
 ```
-Options:
-* `--market` or `-m`: `BTC`, `ETH`, `SOL`, `LINK`
-* `--style` or `-s`: `Trend` (MA crosses), `Mean Reversion` (RSI bounds), `Momentum` (BB break), `Scalping` (high-freq)
-* `--risk` or `-r`: `Low`, `Medium`, `High`
-
-### 2. Execute Live Bitget Spot Feed Paper Trades
-Connect to the Bitget API spot tickers and append verified executions to the public ledger:
-```bash
-node scripts/bitget-paper-trader.js
+save weekly  >  Stock Tokens in your wallet  >  1% fee buys and burns $WIF
+     ^                                                   |
+     |                                                   v
+invite friends  <  public streaks  <  missed weeks burn bonds and reward stayers
 ```
-This script updates the `public/paper_trading_log.json` log which is visualised in the web dashboard under the **Live Agent Feed** tab.
 
-### 3. Run Autonomous Optimization Loop (Top-Tier Thesis Feature)
-Initiate a closed-loop parameter mutation and self-improvement cycle:
-```bash
-node ai/autonomous-loop.js --market BTC --threshold 80
+Every part of the loop that touches $WIF either locks it (bonds) or removes it (fees, slashes, votes). None of it depends on someone losing a bet.
+
+## Proof of Commitment
+
+Every payment updates a public profile per wallet: periods paid, best streak, missed periods, total saved, last payment. Any contract can call:
+
+```solidity
+function isCommitted(address account, uint32 minPaid, uint32 minStreak, uint64 maxIdle) external view returns (bool);
 ```
-This script runs the complete loop:
-* Compiles strategy parameters via `ai/strategy-generator.js`.
-* Performs a 180-day volatility backtest simulation.
-* Scores performance with the AI Evaluator (`ai/strategy-evaluator.js`).
-* If score fails target threshold, automatically mutates indicator parameters to improve yields, re-runs backtest, and updates the active manifest at `public/active_strategy.json` which dynamically updates the frontend dashboard sidebar status!
 
+World is Fair currently checks for farmed votes offchain after voting closes. A vote that requires `isCommitted(voter, 4, 4, 8 days)` filters farmed wallets at the moment the vote is cast, because a month of real weekly payments is expensive to fake.
+
+## Contracts
+
+| | |
+| :- | :- |
+| Chain | Robinhood Chain mainnet, chain id 4663 |
+| Equalship | set after deploy |
+| USDG | `0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168` |
+| $WIF | `0x5173b8eA6923c2d40267890D45C46a3480954773` |
+| Uniswap SwapRouter02 | `0xCaf681a66D020601342297493863E78C959E5cb2` |
+| Uniswap QuoterV2 | `0x33e885eD0Ec9bF04EcfB19341582aADCb4c8A9E7` |
+
+Stock Token addresses come from `api.robinhood.com/rhj/assets`. Pool fee tiers were picked from the deepest USDG pool for each token on 7 Nov 2026.
+
+Design choices:
+
+* One contract holds every circle, so a new circle costs one transaction.
+* Basket swaps send output directly to the member. No pooled custody, no shares, no withdrawal step.
+* Slash rewards use an accumulator, so slashing is O(1) no matter how many members a circle has.
+* `buyAndBurn` is limited to the keeper so nobody can force a burn with a minimum output of zero and sandwich it.
+* The fee is capped at 2% in code.
+
+## Repository
+
+```
+contracts/    Foundry project: Equalship.sol, tests, deploy script
+src/app/      Next.js app: circles, circle page, Proof of Commitment, burn cron
+src/lib/      chain config, ABI, hooks
+scripts/      ABI export
+```
+
+## Run it
+
+Contracts:
+
+```bash
+cd contracts
+forge test
+ROBINHOOD_RPC_URL=https://rpc.mainnet.chain.robinhood.com forge test --match-contract Fork -vv
+```
+
+The fork test buys real NVDA and SPY Stock Tokens from mainnet pools and burns real $WIF from the fee pool.
+
+Deploy:
+
+```bash
+cd contracts
+PRIVATE_KEY=0x... forge script script/Deploy.s.sol --rpc-url robinhood --broadcast --verify
+```
+
+App:
+
+```bash
+cp .env.example .env.local   # set NEXT_PUBLIC_EQUALSHIP_ADDRESS
+npm install
+npm run dev
+```
+
+## Regions
+
+Stock Tokens are not offered to US persons and are restricted in some countries. The app asks every buyer to confirm their eligibility before a basket with Stock Tokens buys anything, and any circle can use a WETH basket instead.
+
+## Disclaimer
+
+Equalship is an independent project. It is not affiliated with, endorsed by, or sponsored by Robinhood Markets, Inc. Nothing here is investment advice. $WIF comes with no promise of value or return.
+
+## License
+
+MIT

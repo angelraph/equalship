@@ -1,26 +1,78 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+@theme {
+  --color-paper: #f6f4ee;
+  --color-card: #ffffff;
+  --color-ink: #16181d;
+  --color-muted: #646a73;
+  --color-line: #e2ded3;
+  --color-save: #1d7a52;
+  --color-save-soft: #e3f1e9;
+  --color-burn: #c2410c;
+  --color-burn-soft: #fbe9df;
+  --color-warn: #a16207;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-mono-face), ui-monospace, monospace;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --color-paper: #111317;
+    --color-card: #181b20;
+    --color-ink: #eef0f2;
+    --color-muted: #9aa1ab;
+    --color-line: #2a2e35;
+    --color-save: #3fbf86;
+    --color-save-soft: #16301f;
+    --color-burn: #f0763a;
+    --color-burn-soft: #3a2116;
   }
 }
 
+:root {
+  color-scheme: light dark;
+}
+
+html,
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-paper);
+  color: var(--color-ink);
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-line bg-card px-4 py-2 text-sm font-medium transition hover:border-ink disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply border-ink bg-ink text-paper hover:opacity-90;
+  }
+  .btn-save {
+    @apply border-save bg-save text-white hover:opacity-90;
+  }
+  .btn-burn {
+    @apply border-burn bg-burn text-white hover:opacity-90;
+  }
+  .btn-warn {
+    @apply border-warn text-warn;
+  }
+  .card {
+    @apply rounded-2xl border border-line bg-card p-5;
+  }
+  .label {
+    @apply text-xs font-medium uppercase tracking-wider text-muted;
+  }
+  .input {
+    @apply w-full rounded-lg border border-line bg-paper px-3 py-2 text-sm outline-none focus:border-ink;
+  }
+  .link {
+    @apply underline decoration-line underline-offset-4 hover:decoration-ink;
+  }
+  .pill {
+    @apply inline-flex items-center gap-1 rounded-full border border-line px-2.5 py-0.5 text-xs;
+  }
 }
