@@ -88,7 +88,13 @@ Deploy:
 
 ```bash
 cd contracts
-PRIVATE_KEY=0x... forge script script/Deploy.s.sol --rpc-url robinhood --broadcast --verify
+PRIVATE_KEY=0x... forge script script/Deploy.s.sol --rpc-url https://rpc.mainnet.chain.robinhood.com --broadcast
+```
+
+Create a demo circle and make the first save (needs 1 USDG and 1000 $WIF in the wallet):
+
+```bash
+PRIVATE_KEY=0x... EQUALSHIP=0x... forge script script/DemoCircle.s.sol --rpc-url https://rpc.mainnet.chain.robinhood.com --broadcast
 ```
 
 App:
