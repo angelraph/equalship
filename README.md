@@ -88,13 +88,15 @@ Deploy:
 
 ```bash
 cd contracts
-PRIVATE_KEY=0x... forge script script/Deploy.s.sol --rpc-url https://rpc.mainnet.chain.robinhood.com --broadcast
+forge script script/Deploy.s.sol --rpc-url https://rpc.mainnet.chain.robinhood.com --broadcast --interactive
 ```
+
+`--interactive` makes forge ask for the key at a hidden prompt, so it never sits in an environment variable or shell history. The deployer becomes the keeper for the daily burn.
 
 Create a demo circle and make the first save (needs 1 USDG and 1000 $WIF in the wallet):
 
 ```bash
-PRIVATE_KEY=0x... EQUALSHIP=0x... forge script script/DemoCircle.s.sol --rpc-url https://rpc.mainnet.chain.robinhood.com --broadcast
+forge script script/DemoCircle.s.sol --sig "run(address)" 0xEQUALSHIP --rpc-url https://rpc.mainnet.chain.robinhood.com --broadcast --interactive
 ```
 
 App:

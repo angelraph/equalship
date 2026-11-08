@@ -6,16 +6,15 @@ import {Equalship} from "../src/Equalship.sol";
 import {IERC20, ISwapRouter02} from "../src/interfaces/IExternal.sol";
 import {Addresses} from "./Addresses.sol";
 
-/// @notice forge script script/Deploy.s.sol --rpc-url robinhood --broadcast --verify
-/// Needs PRIVATE_KEY. KEEPER defaults to the deployer. FEE_BPS defaults to 100 (1%).
+/// @notice forge script script/Deploy.s.sol --rpc-url <RPC> --broadcast --interactive
+/// Forge asks for the deployer key. KEEPER defaults to the deployer. FEE_BPS defaults to 100 (1%).
 contract Deploy is Script {
     function run() external returns (Equalship ship) {
-        uint256 pk = vm.envUint("PRIVATE_KEY");
-        address deployer = vm.addr(pk);
+        vm.startBroadcast();
+        (, address deployer,) = vm.readCallers();
         address keeper = vm.envOr("KEEPER", deployer);
         uint16 feeBps = uint16(vm.envOr("FEE_BPS", uint256(100)));
 
-        vm.startBroadcast(pk);
         ship = new Equalship(
             IERC20(Addresses.USDG),
             IERC20(Addresses.WIF),

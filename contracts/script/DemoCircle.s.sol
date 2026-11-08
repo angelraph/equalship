@@ -13,13 +13,12 @@ interface IQuoterV2 {
 }
 
 /// @notice Creates a demo circle on a deployed Equalship and makes the first save.
-/// forge script script/DemoCircle.s.sol --rpc-url robinhood --broadcast
-/// Needs PRIVATE_KEY and EQUALSHIP. Optional: CONTRIBUTION (USDG, 6 decimals, default 1 USDG),
+/// forge script script/DemoCircle.s.sol --sig "run(address)" <EQUALSHIP> --rpc-url <RPC> --broadcast --interactive
+/// Forge asks for the wallet key. Optional env: CONTRIBUTION (USDG, 6 decimals, default 1 USDG),
 /// BOND (WIF, 18 decimals, default 1000 WIF), PERIOD (seconds, default 3600).
 contract DemoCircle is Script {
-    function run() external returns (uint256 circleId) {
-        uint256 pk = vm.envUint("PRIVATE_KEY");
-        Equalship ship = Equalship(vm.envAddress("EQUALSHIP"));
+    function run(address shipAddress) external returns (uint256 circleId) {
+        Equalship ship = Equalship(shipAddress);
         uint128 contribution = uint128(vm.envOr("CONTRIBUTION", uint256(1e6)));
         uint128 bond = uint128(vm.envOr("BOND", uint256(1000e18)));
         uint32 period = uint32(vm.envOr("PERIOD", uint256(3600)));
@@ -37,7 +36,7 @@ contract DemoCircle is Script {
         minOuts[0] = (q0 * 9800) / 10_000;
         minOuts[1] = (q1 * 9800) / 10_000;
 
-        vm.startBroadcast(pk);
+        vm.startBroadcast();
         IERC20(Addresses.WIF).approve(address(ship), bond);
         IERC20(Addresses.USDG).approve(address(ship), contribution);
         circleId = ship.createCircle("Equalship Demo", contribution, bond, period, 20, 2500, legs);
