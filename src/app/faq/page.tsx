@@ -21,7 +21,7 @@ export default function FaqPage() {
         }
         sub="Everything people ask before joining their first circle."
       />
-      <Container className="grid gap-12 py-14 lg:grid-cols-[220px_1fr]">
+      <Container className="grid grid-cols-[minmax(0,1fr)] gap-12 py-14 lg:grid-cols-[220px_minmax(0,1fr)]">
         <nav className="hidden lg:block">
           <ul className="sticky top-24 space-y-2 text-sm">
             {FAQ_GROUPS.map((g) => (

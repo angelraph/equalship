@@ -29,7 +29,7 @@ export default function CirclesPage() {
         }
         sub="Join one that fits your budget, or start your own and share the link. Every circle lives onchain and every save buys real assets into your own wallet."
       />
-      <Container className="grid gap-8 py-12 lg:grid-cols-[minmax(0,1fr)_420px]">
+      <Container className="grid grid-cols-[minmax(0,1fr)] gap-8 py-12 lg:grid-cols-[minmax(0,1fr)_420px]">
         <section>
           <div className="mb-4 flex items-center justify-between">
             <h2 className="display text-2xl">Open circles</h2>

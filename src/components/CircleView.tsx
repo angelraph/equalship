@@ -87,7 +87,7 @@ export function CircleView({ id }: { id: bigint }) {
         </div>
       </section>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
         <section className="space-y-6">
           <MembersTable id={id} rows={members} currentPeriod={p} />
           <BasketVote id={id} circle={c} isMember={!!me?.m?.active} />

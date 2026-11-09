@@ -20,7 +20,7 @@ export function DocPage({
   return (
     <>
       <PageHero eyebrow={eyebrow} title={title} sub={sub} />
-      <Container className={`grid gap-12 py-14 ${aside ? "lg:grid-cols-[1fr_340px]" : ""}`}>
+      <Container className={`grid grid-cols-[minmax(0,1fr)] gap-12 py-14 ${aside ? "lg:grid-cols-[minmax(0,1fr)_340px]" : ""}`}>
         <article className="prose-eq max-w-3xl">
           {updated && <p className="!text-xs">Last updated {updated}</p>}
           {children}
