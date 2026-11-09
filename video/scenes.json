@@ -1,0 +1,104 @@
+{
+  "voice": "en-US-AndrewNeural",
+  "rate": "+4%",
+  "scenes": [
+    {
+      "id": "intro",
+      "kind": "title",
+      "title": "Equalship",
+      "subtitle": "Save together. Own together.",
+      "text": "This is Equalship. Savings circles on Robinhood Chain, where every save buys real Stock Tokens into your own wallet, and dollar WIF holds the group together."
+    },
+    {
+      "id": "problem",
+      "kind": "statement",
+      "title": "The oldest way to save",
+      "lines": ["Tontine. Susu. Ajo. Chit fund. Tanda.", "You save because the group expects you to."],
+      "text": "Most people never start investing. The first step is lonely and easy to put off. Savings circles fixed that for generations: you save because your group expects you to. Equalship rebuilds that habit on a public ledger."
+    },
+    {
+      "id": "home",
+      "kind": "page",
+      "shot": "home",
+      "caption": "equalship.vercel.app",
+      "text": "On the home page you see the whole idea at a glance. A live ticker of every asset a circle can own, and live numbers read straight from the contract: dollars saved, circles, dollar WIF bonded and dollar WIF burned."
+    },
+    {
+      "id": "markets",
+      "kind": "page",
+      "shot": "markets",
+      "caption": "Markets",
+      "text": "Markets shows live prices for every asset. Stock Token quotes come from the Robinhood Chain pricing API, and the charts are built from real trades in the Uniswap pools that Equalship swaps through."
+    },
+    {
+      "id": "asset",
+      "kind": "page",
+      "shot": "asset",
+      "caption": "NVDA live",
+      "text": "Each asset has its own page with a live chart, the day's range, bid and ask, and the token contract, with one click to start saving into it."
+    },
+    {
+      "id": "circles",
+      "kind": "page",
+      "shot": "circles",
+      "caption": "Circles",
+      "text": "Circles is where you start. Pick an amount from one dollar, how often you pay, the dollar WIF bond, how much a missed period costs, and a basket of up to five assets. Then share the link with your people."
+    },
+    {
+      "id": "circle",
+      "kind": "page",
+      "shot": "circle",
+      "caption": "A live circle on mainnet",
+      "text": "This circle is live on mainnet. Members bond dollar WIF to join. Each period you press save once, and the contract swaps your USDG into the basket and sends the Stock Tokens straight to your wallet in the same transaction. Equalship never holds them."
+    },
+    {
+      "id": "slash",
+      "kind": "statement",
+      "title": "Stay, or pay for leaving",
+      "lines": ["Miss a period: part of your bond is slashed.", "Half is burned. Half goes to the members who stayed."],
+      "text": "Your streak grows with every period you keep. Miss one, and anyone can apply a slash: half of the penalty is burned forever, and half is paid to the members who did save."
+    },
+    {
+      "id": "wif",
+      "kind": "page",
+      "shot": "wif",
+      "caption": "$WIF",
+      "text": "Dollar WIF has a real job here. Bonds lock it. Missed periods burn it. Basket votes burn it. And one percent of every save buys it back on Uniswap and burns it. Demand grows with saving, not with betting."
+    },
+    {
+      "id": "proof",
+      "kind": "page",
+      "shot": "proof",
+      "caption": "Proof of Commitment",
+      "text": "Every save also builds a public record. Proof of Commitment lets any app ask, with one call, whether a wallet has really saved for weeks in a row. That is a cheap filter against farmed wallets, for votes, airdrops and allowlists."
+    },
+    {
+      "id": "trust",
+      "kind": "page",
+      "shot": "security",
+      "caption": "Security",
+      "text": "Security is written in plain words: what the contract can do, what it cannot do, and exactly what your wallet will ask you to sign. Approvals are always for the exact amount, the fee is capped in code, and the source is open."
+    },
+    {
+      "id": "faq",
+      "kind": "page",
+      "shot": "faq",
+      "caption": "FAQ",
+      "text": "New to all of this? The FAQ, How it works, Fees and Developers pages answer the questions people ask before their first save."
+    },
+    {
+      "id": "onchain",
+      "kind": "statement",
+      "title": "Live on Robinhood Chain",
+      "lines": ["Source verified: exact match on Sourcify", "Real circle. Real saves. Real Stock Tokens. Real burns."],
+      "text": "Everything you saw is live on Robinhood Chain mainnet, with real transactions you can check on Blockscout, a contract tested against real mainnet state, and every line of code public on GitHub."
+    },
+    {
+      "id": "outro",
+      "kind": "title",
+      "title": "Equalship",
+      "subtitle": "equalship.vercel.app",
+      "text": "Equalship. Save together, own together. Start a circle today."
+    }
+  ]
+}

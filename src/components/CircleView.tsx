@@ -9,6 +9,7 @@ import { countdown, fmt, short, usd, wifFmt } from "@/lib/format";
 import { ship, useCircle, useNow } from "@/lib/hooks";
 import { useTx } from "@/lib/useTx";
 import { BasketVote } from "./BasketVote";
+import { WalletButton } from "./Header";
 import { RegionGate, useRegionOk } from "./RegionGate";
 import { TxStatus } from "./TxStatus";
 
@@ -32,7 +33,7 @@ export function CircleView({ id }: { id: bigint }) {
   });
 
   if (!isDeployed) return <p className="card text-warn">The Equalship contract address is not set for this site.</p>;
-  if (isLoading) return <p className="text-muted">Loading circle</p>;
+  if (isLoading) return <div className="card h-64 animate-pulse" />;
   if (!data) return <p className="card">Circle #{id.toString()} does not exist.</p>;
 
   const [c, legs] = data;
@@ -58,7 +59,7 @@ export function CircleView({ id }: { id: bigint }) {
       <section className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="font-mono text-xs text-muted">Circle #{id.toString()}</p>
-          <h1 className="text-3xl font-semibold tracking-tight">{c.name}</h1>
+          <h1 className="display mt-1 text-5xl">{c.name}</h1>
           <p className="mt-2 text-muted">
             {usd(c.contribution)} every {periodLabel(c.period)}. Bond {wifFmt(c.bond)} $WIF. Missing {periodLabel(c.period) === "hour" ? "an" : "a"}{" "}
             {periodLabel(c.period)} costs {c.slashBps / 100}% of the bond.
@@ -291,7 +292,12 @@ function YourPanel({
   return (
     <div className="card space-y-4">
       <h2 className="font-semibold">You</h2>
-      {!address && <p className="text-sm text-muted">Connect a wallet to join or save.</p>}
+      {!address && (
+        <>
+          <p className="text-sm text-muted">Connect a wallet to join or save.</p>
+          <WalletButton />
+        </>
+      )}
       {address && (
         <div className="grid grid-cols-2 gap-2 text-sm">
           <div>

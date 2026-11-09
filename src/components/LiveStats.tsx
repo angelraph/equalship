@@ -4,7 +4,8 @@ import { ADDR, EXPLORER, isDeployed } from "@/lib/chain";
 import { fmt, usd, wifFmt } from "@/lib/format";
 import { useStats } from "@/lib/hooks";
 
-export function LiveStats() {
+/** Numbers read straight from the Equalship contract. */
+export function LiveStats({ compact = false }: { compact?: boolean }) {
   const s = useStats();
   const burned =
     s.burnedFromFees !== undefined && s.burnedFromSlashes !== undefined && s.burnedFromVotes !== undefined
@@ -12,38 +13,33 @@ export function LiveStats() {
       : undefined;
 
   const tiles = [
-    { label: "Saved into Stock Tokens", value: usd(s.totalSaved) },
+    { label: "Saved into assets", value: usd(s.totalSaved) },
+    { label: "Circles", value: s.circleCount === undefined ? "..." : fmt(s.circleCount, 0, 0) },
     { label: "Contributions", value: s.totalContributions === undefined ? "..." : fmt(s.totalContributions, 0, 0) },
     { label: "$WIF bonded", value: wifFmt(s.totalBonded) },
     { label: "$WIF burned", value: wifFmt(burned), burn: true },
   ];
 
   return (
-    <section>
-      <div className="mb-3 flex items-baseline justify-between">
-        <h2 className="text-sm font-semibold">Live from the contract</h2>
-        {isDeployed ? (
-          <a className="link text-xs text-muted" href={`${EXPLORER}/address/${ADDR.equalship}`} target="_blank" rel="noreferrer">
-            Contract on Blockscout
-          </a>
-        ) : (
-          <span className="text-xs text-warn">Contract address not configured</span>
-        )}
-      </div>
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+    <div>
+      <div className={`grid gap-3 ${compact ? "grid-cols-2 md:grid-cols-5" : "grid-cols-2 md:grid-cols-5"}`}>
         {tiles.map((t) => (
-          <div key={t.label} className="card">
+          <div key={t.label} className="rounded-3xl border border-line bg-card p-5">
             <p className="label">{t.label}</p>
             <p className={`mt-2 font-mono text-2xl font-semibold ${t.burn ? "text-burn" : ""}`}>{isDeployed ? t.value : "0"}</p>
           </div>
         ))}
       </div>
-      {isDeployed && burned !== undefined && (
-        <p className="mt-2 text-xs text-muted">
-          Burned from fees {wifFmt(s.burnedFromFees)}, from missed weeks {wifFmt(s.burnedFromSlashes)}, from votes{" "}
-          {wifFmt(s.burnedFromVotes)}. {usd(s.feePool)} in fees waiting to buy and burn.
-        </p>
-      )}
-    </section>
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-muted">
+        <span className="flex items-center gap-2">
+          <span className="live-dot" /> Live from the contract on Robinhood Chain. {usd(s.feePool)} in fees waiting to buy and burn $WIF.
+        </span>
+        {isDeployed && (
+          <a className="link" href={`${EXPLORER}/address/${ADDR.equalship}`} target="_blank" rel="noreferrer">
+            Contract on Blockscout
+          </a>
+        )}
+      </div>
+    </div>
   );
 }

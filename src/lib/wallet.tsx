@@ -1,12 +1,23 @@
 "use client";
 
 /**
- * A small wallet layer on top of viem and React Query for injected wallets (EIP-1193).
- * The hook names follow wagmi so the pages read the same, without wagmi's connector dependencies.
+ * Wallet layer on top of viem and React Query.
+ * Finds every installed browser wallet through EIP-6963 (with a window.ethereum fallback),
+ * lets the user pick one, remembers the choice, and disconnects for real.
+ * Hook names follow wagmi so the pages read the same.
  */
 
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react";
 import {
   createPublicClient,
   createWalletClient,
@@ -26,7 +37,7 @@ import { robinhoodChain } from "./chain";
 
 declare global {
   interface Window {
-    ethereum?: EIP1193Provider;
+    ethereum?: EIP1193Provider & Record<string, unknown>;
   }
 }
 
@@ -37,108 +48,206 @@ export const publicClient: PublicClient = createPublicClient({
   pollingInterval: 1_000,
 });
 
+// Discovery
+
+export type WalletInfo = { rdns: string; name: string; icon: string; provider: EIP1193Provider };
+
+type AnnounceEvent = CustomEvent<{
+  info: { uuid: string; name: string; icon: string; rdns: string };
+  provider: EIP1193Provider;
+}>;
+
+let discovered: WalletInfo[] = [];
+const EMPTY: WalletInfo[] = [];
+const listeners = new Set<() => void>();
+let started = false;
+
+function legacyName(eth: Record<string, unknown>): string {
+  if (eth.isRabby) return "Rabby";
+  if (eth.isPhantom) return "Phantom";
+  if (eth.isCoinbaseWallet) return "Coinbase Wallet";
+  if (eth.isOkxWallet || eth.isOKExWallet) return "OKX Wallet";
+  if (eth.isBraveWallet) return "Brave Wallet";
+  if (eth.isTrust || eth.isTrustWallet) return "Trust Wallet";
+  if (eth.isMetaMask) return "MetaMask";
+  return "Browser wallet";
+}
+
+function startDiscovery() {
+  if (started || typeof window === "undefined") return;
+  started = true;
+  window.addEventListener("eip6963:announceProvider", (event) => {
+    const { info, provider } = (event as AnnounceEvent).detail;
+    if (discovered.some((w) => w.rdns === info.rdns)) return;
+    discovered = [...discovered, { rdns: info.rdns, name: info.name, icon: info.icon, provider }];
+    listeners.forEach((l) => l());
+  });
+  window.dispatchEvent(new Event("eip6963:requestProvider"));
+  // wallets that predate EIP-6963 only expose window.ethereum
+  setTimeout(() => {
+    const eth = window.ethereum;
+    if (eth && discovered.length === 0) {
+      discovered = [{ rdns: "injected", name: legacyName(eth), icon: "", provider: eth }];
+      listeners.forEach((l) => l());
+    }
+  }, 500);
+}
+
+export function useWallets(): WalletInfo[] {
+  return useSyncExternalStore(
+    (cb) => {
+      startDiscovery();
+      listeners.add(cb);
+      return () => listeners.delete(cb);
+    },
+    () => discovered,
+    () => EMPTY,
+  );
+}
+
+// Connection state
+
 type WalletState = {
   address?: Address;
   chainId?: number;
+  wallet?: WalletInfo;
   connecting: boolean;
-  hasWallet: boolean;
-  connect: () => Promise<void>;
-  disconnect: () => void;
+  pickerOpen: boolean;
+  openPicker: () => void;
+  closePicker: () => void;
+  connect: (wallet?: WalletInfo) => Promise<void>;
+  disconnect: () => Promise<void>;
   switchChain: () => Promise<void>;
 };
 
-const noopSubscribe = () => () => {};
-
 const WalletContext = createContext<WalletState | null>(null);
-const DISCONNECTED_KEY = "equalship.disconnected";
+const WALLET_KEY = "equalship.wallet";
+
+function readStored(): string | null {
+  try {
+    return localStorage.getItem(WALLET_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function writeStored(rdns: string | null) {
+  try {
+    if (rdns) localStorage.setItem(WALLET_KEY, rdns);
+    else localStorage.removeItem(WALLET_KEY);
+  } catch {
+    // storage blocked, the session still works
+  }
+}
+
+async function switchOn(provider: EIP1193Provider) {
+  const hexId = numberToHex(robinhoodChain.id);
+  try {
+    await provider.request({ method: "wallet_switchEthereumChain", params: [{ chainId: hexId }] });
+  } catch (e) {
+    if ((e as { code?: number }).code !== 4902) throw e;
+    await provider.request({
+      method: "wallet_addEthereumChain",
+      params: [
+        {
+          chainId: hexId,
+          chainName: robinhoodChain.name,
+          nativeCurrency: robinhoodChain.nativeCurrency,
+          rpcUrls: [...robinhoodChain.rpcUrls.default.http],
+          blockExplorerUrls: [robinhoodChain.blockExplorers.default.url],
+        },
+      ],
+    });
+  }
+}
 
 export function WalletProvider({ children }: { children: ReactNode }) {
+  const wallets = useWallets();
   const [address, setAddress] = useState<Address>();
   const [chainId, setChainId] = useState<number>();
+  const [wallet, setWallet] = useState<WalletInfo>();
   const [connecting, setConnecting] = useState(false);
-  const hasWallet = useSyncExternalStore(noopSubscribe, () => !!window.ethereum, () => false);
+  const [pickerOpen, setPickerOpen] = useState(false);
+
+  // quiet reconnect to the wallet used last time, without a popup
+  useEffect(() => {
+    if (wallet) return;
+    const stored = readStored();
+    const match = stored ? wallets.find((w) => w.rdns === stored) : undefined;
+    if (!match) return;
+    match.provider.request({ method: "eth_accounts" }).then((a) => {
+      const acct = (a as Address[])[0];
+      if (!acct) return;
+      setWallet(match);
+      setAddress(acct);
+      match.provider.request({ method: "eth_chainId" }).then((id) => setChainId(Number(id)));
+    });
+  }, [wallets, wallet]);
 
   useEffect(() => {
-    const eth = window.ethereum;
-    if (!eth) return;
-    let manualOff = false;
-    try {
-      manualOff = localStorage.getItem(DISCONNECTED_KEY) === "1";
-    } catch {
-      // storage blocked
-    }
-    if (!manualOff) {
-      eth.request({ method: "eth_accounts" }).then((a) => setAddress((a as Address[])[0]));
-    }
-    eth.request({ method: "eth_chainId" }).then((id) => setChainId(Number(id)));
+    if (!wallet) return;
+    const p = wallet.provider;
     const onAccounts = (a: Address[]) => setAddress(a[0]);
     const onChain = (id: string) => setChainId(Number(id));
-    eth.on("accountsChanged", onAccounts);
-    eth.on("chainChanged", onChain);
+    p.on("accountsChanged", onAccounts);
+    p.on("chainChanged", onChain);
     return () => {
-      eth.removeListener("accountsChanged", onAccounts);
-      eth.removeListener("chainChanged", onChain);
+      p.removeListener("accountsChanged", onAccounts);
+      p.removeListener("chainChanged", onChain);
     };
-  }, []);
+  }, [wallet]);
 
   const switchChain = useCallback(async () => {
-    const eth = window.ethereum;
-    if (!eth) return;
-    const hexId = numberToHex(robinhoodChain.id);
-    try {
-      await eth.request({ method: "wallet_switchEthereumChain", params: [{ chainId: hexId }] });
-    } catch (e) {
-      if ((e as { code?: number }).code !== 4902) throw e;
-      await eth.request({
-        method: "wallet_addEthereumChain",
-        params: [
-          {
-            chainId: hexId,
-            chainName: robinhoodChain.name,
-            nativeCurrency: robinhoodChain.nativeCurrency,
-            rpcUrls: [...robinhoodChain.rpcUrls.default.http],
-            blockExplorerUrls: [robinhoodChain.blockExplorers.default.url],
-          },
-        ],
-      });
-    }
-  }, []);
+    if (wallet) await switchOn(wallet.provider);
+  }, [wallet]);
 
-  const connect = useCallback(async () => {
-    const eth = window.ethereum;
-    if (!eth) {
-      window.open("https://metamask.io/download/", "_blank");
+  const connect = useCallback(async (w?: WalletInfo) => {
+    if (!w) {
+      setPickerOpen(true);
       return;
     }
     setConnecting(true);
     try {
-      const a = (await eth.request({ method: "eth_requestAccounts" })) as Address[];
+      const a = (await w.provider.request({ method: "eth_requestAccounts" })) as Address[];
+      setWallet(w);
       setAddress(a[0]);
-      try {
-        localStorage.removeItem(DISCONNECTED_KEY);
-      } catch {
-        // storage blocked
-      }
-      const id = Number(await eth.request({ method: "eth_chainId" }));
+      writeStored(w.rdns);
+      const id = Number(await w.provider.request({ method: "eth_chainId" }));
       setChainId(id);
-      if (id !== robinhoodChain.id) await switchChain();
+      setPickerOpen(false);
+      if (id !== robinhoodChain.id) await switchOn(w.provider);
     } finally {
       setConnecting(false);
     }
-  }, [switchChain]);
-
-  const disconnect = useCallback(() => {
-    setAddress(undefined);
-    try {
-      localStorage.setItem(DISCONNECTED_KEY, "1");
-    } catch {
-      // storage blocked
-    }
   }, []);
 
+  const disconnect = useCallback(async () => {
+    const p = wallet?.provider;
+    setAddress(undefined);
+    setWallet(undefined);
+    writeStored(null);
+    // wallets that support it drop the site's permission too
+    try {
+      await p?.request({ method: "wallet_revokePermissions", params: [{ eth_accounts: {} }] } as never);
+    } catch {
+      // not supported by this wallet
+    }
+  }, [wallet]);
+
   const value = useMemo(
-    () => ({ address, chainId, connecting, hasWallet, connect, disconnect, switchChain }),
-    [address, chainId, connecting, hasWallet, connect, disconnect, switchChain],
+    () => ({
+      address,
+      chainId,
+      wallet,
+      connecting,
+      pickerOpen,
+      openPicker: () => setPickerOpen(true),
+      closePicker: () => setPickerOpen(false),
+      connect,
+      disconnect,
+      switchChain,
+    }),
+    [address, chainId, wallet, connecting, pickerOpen, connect, disconnect, switchChain],
   );
   return <WalletContext.Provider value={value}>{children}</WalletContext.Provider>;
 }
@@ -193,7 +302,9 @@ export function useReadContract<
   });
 }
 
-export type ReadResult<T> = { status: "success"; result: T } | { status: "failure"; error: Error; result?: undefined };
+export type ReadResult<T> =
+  | { status: "success"; result: T }
+  | { status: "failure"; error: Error; result?: undefined };
 
 type AnyCall = { address: Address; abi: Abi; functionName: string; args?: readonly unknown[] };
 
@@ -201,10 +312,7 @@ type AnyCall = { address: Address; abi: Abi; functionName: string; args?: readon
 export function useReadContracts(params: { contracts: readonly AnyCall[]; query?: { enabled?: boolean } }) {
   const enabled = (params.query?.enabled ?? true) && params.contracts.length > 0;
   return useQuery({
-    queryKey: [
-      "reads",
-      keyOf(params.contracts.map((c) => [c.address, c.functionName, c.args ?? []])),
-    ],
+    queryKey: ["reads", keyOf(params.contracts.map((c) => [c.address, c.functionName, c.args ?? []]))],
     enabled,
     queryFn: async () =>
       (await publicClient.multicall({
@@ -217,7 +325,7 @@ export function useReadContracts(params: { contracts: readonly AnyCall[]; query?
 // Writes
 
 export function useWriteContract() {
-  const { address, chainId, switchChain } = useWallet();
+  const { address, chainId, wallet } = useWallet();
   const mutation = useMutation({
     mutationFn: async (params: {
       address: Address;
@@ -225,10 +333,9 @@ export function useWriteContract() {
       functionName: string;
       args?: readonly unknown[];
     }): Promise<Hash> => {
-      const eth = window.ethereum;
-      if (!eth || !address) throw new Error("Connect a wallet first");
-      if (chainId !== robinhoodChain.id) await switchChain();
-      const wallet = createWalletClient({ chain: robinhoodChain, transport: custom(eth), account: address });
+      if (!wallet || !address) throw new Error("Connect a wallet first");
+      if (chainId !== robinhoodChain.id) await switchOn(wallet.provider);
+      const client = createWalletClient({ chain: robinhoodChain, transport: custom(wallet.provider), account: address });
       // Simulate first so a revert shows its reason before the wallet pops up.
       const { request } = await publicClient.simulateContract({
         address: params.address,
@@ -237,7 +344,7 @@ export function useWriteContract() {
         args: params.args ?? [],
         account: address,
       });
-      return wallet.writeContract(request);
+      return client.writeContract(request);
     },
   });
   const writeContractAsync = useCallback(

@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Equalship demo film</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Plus+Jakarta+Sans:wght@400;600&family=Instrument+Serif:ital@1&display=block" rel="stylesheet" />
+<style>
+  html, body { margin: 0; background: #000; }
+  canvas { display: block; width: 960px; height: 540px; }
+</style>
+</head>
+<body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script>
+const W = 1920, H = 1080, FPS = 30;
+const C = { bg: "#0b0a10", card: "#16141e", line: "rgba(255,255,255,0.09)", ink: "#f4f2fa", muted: "#a39fb4", brand: "#8b5cf6", brand2: "#a78bfa", burn: "#ff7a45", up: "#3dd68c" };
+const ctx = document.getElementById("c").getContext("2d");
+const status = (s) => { window.__status = s; };
+
+const LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><defs><linearGradient id="w" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#DCD3F7"/></linearGradient><linearGradient id="p" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#A78BFA"/><stop offset="1" stop-color="#6D28D9"/></linearGradient><linearGradient id="o" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#5B21B6" stop-opacity=".2"/><stop offset=".6" stop-color="#7C3AED"/><stop offset="1" stop-color="#C4B5FD"/></linearGradient></defs><path d="M18 92 C 4 70, 40 44, 92 40" fill="none" stroke="url(#o)" stroke-width="5" stroke-linecap="round" opacity=".55"/><circle cx="44" cy="25" r="7" fill="url(#p)"/><path d="M31 44 a13 11 0 0 1 26 0 z" fill="url(#p)"/><circle cx="84" cy="25" r="7" fill="url(#w)"/><path d="M71 44 a13 11 0 0 1 26 0 z" fill="url(#w)"/><circle cx="64" cy="18" r="9" fill="url(#w)"/><path d="M47 44 a17 14 0 0 1 34 0 z" fill="url(#w)"/><path d="M96 46 H56 Q30 46 30 72 V86 Q30 112 56 112 H96 Q104 112 106 104 L108 97 H58 Q46 97 46 86 V72 Q46 61 58 61 H100 Z" fill="url(#w)"/><path d="M56 69 H98 L94 81 H56 Q52 81 52 77 V73 Q52 69 56 69 Z" fill="url(#p)"/><rect x="62" y="88" width="5" height="5" rx="1" fill="#8B5CF6"/><rect x="70" y="86" width="5" height="7" rx="1" fill="#8B5CF6"/><rect x="78" y="84" width="5" height="9" rx="1" fill="#8B5CF6"/><path d="M18 92 C 30 112, 84 100, 118 58" fill="none" stroke="url(#o)" stroke-width="5" stroke-linecap="round"/><path d="M118 50 l2.4 6 6 2.4 -6 2.4 -2.4 6 -2.4 -6 -6 -2.4 6 -2.4z" fill="#EDE9FE"/></svg>`;
+
+const ease = (t) => (t < 0 ? 0 : t > 1 ? 1 : t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const loadImg = (src) => new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; });
+const display = (s) => s.replace(/dollar WIF/g, "$WIF");
+
+function rr(x, y, w, h, r) { ctx.beginPath(); ctx.roundRect(x, y, w, h, r); }
+
+function background(t) {
+  ctx.fillStyle = C.bg; ctx.fillRect(0, 0, W, H);
+  const g = ctx.createRadialGradient(W * 0.5 + Math.sin(t * 0.3) * 200, -120, 40, W * 0.5, 0, 1100);
+  g.addColorStop(0, "rgba(139,92,246,0.42)"); g.addColorStop(1, "rgba(139,92,246,0)");
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+}
+
+function wrap(text, maxW) {
+  const words = text.split(" "); const lines = []; let cur = "";
+  for (const w of words) { const t = cur ? cur + " " + w : w; if (ctx.measureText(t).width > maxW && cur) { lines.push(cur); cur = w; } else cur = t; }
+  if (cur) lines.push(cur); return lines;
+}
+
+function drawLogo(img, cx, cy, size, rot = 0) {
+  ctx.save(); ctx.translate(cx, cy); ctx.rotate(rot); ctx.drawImage(img, -size / 2, -size / 2, size, size); ctx.restore();
+}
+
+function titleScene(s, lt, d, img) {
+  const a = ease(lt / 1.0);
+  const out = clamp((d - lt) / 0.6, 0, 1);
+  ctx.globalAlpha = Math.min(a, out);
+  // orbit rings
+  ctx.strokeStyle = "rgba(167,139,250,0.25)"; ctx.lineWidth = 2;
+  for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.ellipse(W / 2, 400, 230 + i * 70, 230 + i * 70, 0, 0, Math.PI * 2); ctx.setLineDash([6, 14]); ctx.lineDashOffset = -lt * 30 * (i + 1); ctx.stroke(); }
+  ctx.setLineDash([]);
+  // orbiting savers
+  const cols = ["#f472b6", "#60a5fa", "#fbbf24", "#34d399", "#f87171", "#a78bfa"];
+  for (let i = 0; i < 6; i++) { const ang = lt * 0.45 + (i / 6) * Math.PI * 2; ctx.fillStyle = cols[i]; ctx.beginPath(); ctx.arc(W / 2 + Math.cos(ang) * 300, 400 + Math.sin(ang) * 300, 22, 0, Math.PI * 2); ctx.fill(); }
+  drawLogo(img, W / 2, 400, 260 * (0.85 + 0.15 * a), (1 - a) * -0.4);
+  ctx.textAlign = "center";
+  ctx.fillStyle = C.ink; ctx.font = "700 112px 'Space Grotesk'";
+  const ty = 820 - (1 - ease((lt - 0.3) / 0.9)) * 40;
+  ctx.globalAlpha = Math.min(ease((lt - 0.3) / 0.9), out);
+  const tw = ctx.measureText("Equalship").width; const eq = ctx.measureText("Equal").width;
+  ctx.textAlign = "left"; ctx.fillText("Equal", W / 2 - tw / 2, ty); ctx.fillStyle = C.brand2; ctx.fillText("ship", W / 2 - tw / 2 + eq, ty);
+  ctx.textAlign = "center"; ctx.fillStyle = C.muted; ctx.font = "italic 64px 'Instrument Serif'";
+  ctx.globalAlpha = Math.min(ease((lt - 0.8) / 0.9), out); ctx.fillText(s.subtitle, W / 2, 910);
+  ctx.globalAlpha = 1;
+}
+
+function statementScene(s, lt, d) {
+  const out = clamp((d - lt) / 0.6, 0, 1);
+  ctx.textAlign = "left";
+  ctx.globalAlpha = Math.min(ease(lt / 0.8), out);
+  ctx.fillStyle = C.brand2; ctx.font = "600 34px 'Plus Jakarta Sans'"; ctx.fillText("EQUALSHIP", 180, 330);
+  ctx.fillStyle = C.ink; ctx.font = "700 104px 'Space Grotesk'";
+  ctx.fillText(display(s.title), 180, 460 - (1 - ease(lt / 0.8)) * 30);
+  s.lines.forEach((line, i) => {
+    const st = 0.9 + i * 1.3; const p = ease((lt - st) / 0.8);
+    ctx.globalAlpha = Math.min(p, out);
+    ctx.fillStyle = i === 1 ? C.brand2 : C.muted; ctx.font = i === 1 ? "italic 58px 'Instrument Serif'" : "500 46px 'Plus Jakarta Sans'";
+    ctx.fillText(display(line), 180 + (1 - p) * 40, 580 + i * 92);
+  });
+  // accent bar
+  ctx.globalAlpha = out; ctx.fillStyle = C.brand; rr(180, 370, 160 * ease(lt / 1.2), 8, 4); ctx.fill();
+  ctx.globalAlpha = 1;
+}
+
+function pageScene(s, lt, d, shot) {
+  const inA = ease(lt / 0.7), out = clamp((d - lt) / 0.6, 0, 1);
+  ctx.globalAlpha = Math.min(inA, out);
+  // browser frame
+  const fw = 1560, fh = 860, fx = (W - fw) / 2, fy = 120 + (1 - inA) * 40;
+  ctx.save();
+  ctx.shadowColor = "rgba(139,92,246,0.35)"; ctx.shadowBlur = 80;
+  ctx.fillStyle = C.card; rr(fx, fy, fw, fh, 28); ctx.fill();
+  ctx.restore();
+  ctx.fillStyle = "#1d1a28"; rr(fx, fy, fw, 64, [28, 28, 0, 0]); ctx.fill();
+  ["#ff5f57", "#febc2e", "#28c840"].forEach((c, i) => { ctx.fillStyle = c; ctx.beginPath(); ctx.arc(fx + 34 + i * 26, fy + 32, 8, 0, Math.PI * 2); ctx.fill(); });
+  ctx.fillStyle = "#0b0a10"; rr(fx + 420, fy + 14, 720, 36, 18); ctx.fill();
+  ctx.fillStyle = C.muted; ctx.font = "500 20px 'Plus Jakarta Sans'"; ctx.textAlign = "center";
+  const PATHS = { home: "", markets: "/markets", asset: "/markets/nvda", circles: "/circles", circle: "/circle/0", wif: "/wif", proof: "/proof", trust: "/security", faq: "/faq" };
+  ctx.fillText("equalship.vercel.app" + (PATHS[s.id] ?? ""), fx + 780, fy + 39);
+  // screenshot with slow scroll and zoom
+  const vx = fx, vy = fy + 64, vw = fw, vh = fh - 64;
+  ctx.save(); rr(vx, vy, vw, vh, [0, 0, 28, 28]); ctx.clip();
+  const scale = vw / shot.width * (1.0 + 0.04 * ease(lt / d));
+  const maxScroll = Math.max(0, shot.height * scale - vh) * 0.62;
+  const scroll = maxScroll * ease(clamp((lt - 0.8) / Math.max(1, d - 1.8), 0, 1));
+  ctx.drawImage(shot, vx - (shot.width * scale - vw) / 2, vy - scroll, shot.width * scale, shot.height * scale);
+  ctx.restore();
+  // caption chip
+  ctx.textAlign = "left"; ctx.font = "700 30px 'Space Grotesk'";
+  const label = display(s.caption); const lw = ctx.measureText(label).width + 64;
+  ctx.fillStyle = C.brand; rr(fx - 20, fy - 34, lw, 64, 32); ctx.fill();
+  ctx.fillStyle = "#fff"; ctx.fillText(label, fx + 12, fy + 8);
+  ctx.globalAlpha = 1;
+}
+
+function subtitles(s, lt, d, audioDur) {
+  const words = display(s.text).split(" ");
+  const chunks = []; for (let i = 0; i < words.length; i += 11) chunks.push(words.slice(i, i + 11).join(" "));
+  const per = audioDur / chunks.length; const idx = Math.floor(clamp(lt - 0.35, 0, audioDur - 0.01) / per);
+  if (lt > audioDur + 0.6) return;
+  const text = chunks[Math.min(idx, chunks.length - 1)];
+  ctx.font = "600 34px 'Plus Jakarta Sans'"; ctx.textAlign = "center";
+  const tw = ctx.measureText(text).width + 56;
+  ctx.fillStyle = "rgba(11,10,16,0.82)"; rr(W / 2 - tw / 2, H - 92, tw, 58, 16); ctx.fill();
+  ctx.fillStyle = C.ink; ctx.fillText(text, W / 2, H - 52);
+}
+
+function progress(t, total, idx, n) {
+  ctx.fillStyle = "rgba(255,255,255,0.08)"; ctx.fillRect(0, H - 6, W, 6);
+  ctx.fillStyle = C.brand; ctx.fillRect(0, H - 6, W * (t / total), 6);
+  ctx.fillStyle = C.muted; ctx.font = "500 20px 'Plus Jakarta Sans'"; ctx.textAlign = "right";
+  ctx.fillText(`${idx + 1} / ${n}`, W - 40, 56);
+}
+
+async function setup() {
+  status("loading");
+  await document.fonts.load("700 40px 'Space Grotesk'"); await document.fonts.load("400 40px 'Plus Jakarta Sans'"); await document.fonts.load("600 40px 'Plus Jakarta Sans'"); await document.fonts.load("italic 40px 'Instrument Serif'");
+  const cfg = await (await fetch("scenes.json")).json();
+  const logo = await loadImg("data:image/svg+xml;charset=utf-8," + encodeURIComponent(LOGO_SVG));
+  const actx = new OfflineAudioContext(1, 48000, 48000);
+  const scenes = [];
+  for (const s of cfg.scenes) {
+    const buf = await actx.decodeAudioData(await (await fetch(`out/audio/${s.id}.mp3`)).arrayBuffer());
+    const shot = s.shot ? await loadImg(`out/shots/${s.shot}.jpg`) : null;
+    const pad = s.id === "intro" ? 1.6 : s.id === "outro" ? 2.2 : 0.9;
+    const speech = s.id === "intro" ? 0.8 : 0.35;
+    scenes.push({ ...s, shot, speech, audioDur: buf.duration, dur: buf.duration + pad + (s.id === "intro" ? 0.8 : 0) });
+  }
+  let t0 = 0; for (const s of scenes) { s.start = t0; t0 += s.dur; }
+  const total = t0;
+
+  // Draws the exact frame for time t. Deterministic, so every frame is rendered.
+  window.renderFrame = (t) => {
+    const idx = Math.max(0, scenes.findIndex((s) => t >= s.start && t < s.start + s.dur));
+    const s = scenes[idx]; const lt = Math.max(0, t - s.start);
+    background(t);
+    if (s.kind === "title") titleScene(s, lt, s.dur, logo);
+    else if (s.kind === "statement") statementScene(s, lt, s.dur);
+    else pageScene(s, lt, s.dur, s.shot);
+    if (lt > s.speech) subtitles(s, lt - s.speech, s.dur, s.audioDur);
+    progress(t, total, idx, scenes.length);
+    return document.getElementById("c").toDataURL("image/jpeg", 0.92);
+  };
+  window.__plan = { total, scenes: scenes.map((s) => ({ id: s.id, start: s.start, dur: s.dur, speech: s.speech, audioDur: s.audioDur, text: display(s.text), caption: display(s.caption || s.title) })) };
+  status("ready");
+}
+setup().catch((e) => { status("error: " + e.message); console.error(e); });
+</script>
+</body>
+</html>

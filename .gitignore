@@ -47,3 +47,6 @@ next-env.d.ts
 /contracts/broadcast/
 
 .vercel
+
+# demo video output
+/video/out/

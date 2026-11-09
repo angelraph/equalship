@@ -1,6 +1,6 @@
 "use client";
 
-import { ASSETS, pathFor, type Asset } from "@/lib/chain";
+import { BASKET_ASSETS as ASSETS, pathFor, type Asset } from "@/lib/chain";
 
 export type Weights = Record<string, number>;
 

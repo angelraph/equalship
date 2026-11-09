@@ -56,6 +56,8 @@ World is Fair currently checks for farmed votes offchain after voting closes. A 
 
 Live app: [equalship.vercel.app](https://equalship.vercel.app)
 
+Verified source: [exact match on Sourcify](https://repo.sourcify.dev/4663/0x3B5598d1bEBfeDF9a8E19526F728e3184a5F6A92) for both creation and runtime bytecode. The standard JSON input used is in `contracts/verification/`.
+
 ### Mainnet transactions
 
 | What | Transaction |
@@ -78,10 +80,33 @@ Design choices:
 
 ## Repository
 
+## The app
+
+| Page | What it does |
+| :- | :- |
+| `/` | Hero, live price ticker, live contract stats, how it works, product tour, live market cards, security and FAQ previews |
+| `/circles` | Every circle onchain, and the form to start one |
+| `/circle/[id]` | Join, save, slash, claim, leave, invite or sponsor a friend, and the basket vote |
+| `/markets` | Live prices, 24 hour range, pool volume and trend for every asset |
+| `/markets/[symbol]` | Interactive live chart, bid and ask, token contract, save into it |
+| `/wif` | Live $WIF price, burn totals by source, bonded supply, the flywheel |
+| `/proof` | Look up any wallet's Proof of Commitment record |
+| `/how`, `/faq`, `/fees`, `/security`, `/developers`, `/about` | Learn pages |
+| `/terms`, `/privacy`, `/risk` | Legal pages |
+
+Wallets: every installed browser wallet is detected through EIP-6963 and shown in a picker. The account menu can copy the address, open it on Blockscout, switch wallet or disconnect (which also revokes the site's permission where the wallet supports it).
+
+Live data: Stock Token quotes come from the Robinhood Chain pricing API. Charts are built from hourly trades in the Uniswap pools the app swaps through, served by DexPaprika. Set `DEXPAPRIKA_API_KEY` to extend charts from 24 hours to 7 days.
+
+Security headers: strict Content Security Policy, no framing, HSTS, and `/.well-known/security.txt`.
+
+## Repository
+
 ```
-contracts/    Foundry project: Equalship.sol, tests, deploy script
-src/app/      Next.js app: circles, circle page, Proof of Commitment, burn cron
-src/lib/      chain config, ABI, hooks
+contracts/    Foundry project: Equalship.sol, tests, deploy and demo scripts, verification input
+src/app/      Next.js app: every page above, market API, burn cron
+src/lib/      chain config, ABI, wallet layer, market data
+video/        the demo video pipeline: narration, screenshots, frame renderer
 scripts/      ABI export
 ```
 
@@ -111,6 +136,23 @@ Create a demo circle and make the first save (needs 1 USDG and 1000 $WIF in the 
 ```bash
 forge script script/DemoCircle.s.sol --sig "run(address)" 0xEQUALSHIP --rpc-url https://rpc.mainnet.chain.robinhood.com --broadcast --interactive
 ```
+
+Run the rest of the flywheel on a circle (keeper and member): buy back and burn the fee pool, propose a basket and burn 1 $WIF as a vote:
+
+```bash
+forge script script/DemoActions.s.sol --sig "run(address,uint256)" 0xEQUALSHIP 0 --rpc-url https://rpc.mainnet.chain.robinhood.com --broadcast --interactive
+```
+
+Demo video:
+
+```bash
+pip install edge-tts imageio-ffmpeg
+python video/narrate.py
+node video/capture.mjs https://equalship.vercel.app
+node video/record.mjs
+```
+
+The script for the narration lives in `video/scenes.json`. Output goes to `video/out/`: the MP4, a transcript and SRT captions.
 
 App:
 

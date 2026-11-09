@@ -1,65 +1,92 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+import { Container, Icon, PageHero, SectionHead } from "@/components/ui";
+
+export const metadata: Metadata = {
+  title: "How it works",
+  description: "How an Equalship savings circle works, from the first save to leaving with your bond.",
+};
 
 const STEPS = [
   {
+    icon: "users",
     t: "Start or join a circle",
-    b: "A circle sets the amount (from 1 USDG), how often you pay, the $WIF bond, and a basket of up to five assets: Stock Tokens such as NVDA, AAPL, TSLA, MSFT, SPY and QQQ, or WETH.",
+    b: "A circle sets the amount (from 1 USDG), how often you pay (hourly for demos, daily, weekly or every two weeks), the $WIF bond, the slash rate, and a basket of up to five assets such as NVDA, AAPL, TSLA, MSFT, SPY, QQQ or WETH.",
   },
   {
+    icon: "lock",
     t: "Bond $WIF",
-    b: "Joining locks the circle's $WIF bond in the contract. You get it back when you leave, minus slashes. A friend can pay your bond for you, so someone with no $WIF can still join.",
+    b: "Joining locks the circle's bond in the contract. It comes back when you leave, minus slashes. A friend can pay your bond with Sponsor a friend, so someone with no $WIF can still start.",
   },
   {
+    icon: "wallet",
     t: "Save every period",
-    b: "Press save once per period. The contract takes your USDG, keeps a 1% fee for the burn, and swaps the rest on Uniswap into each basket asset. The output goes straight to your wallet. The contract never holds your stocks.",
+    b: "Press save once per period. The contract takes your USDG, keeps 1% for the burn, and swaps the rest on Uniswap into each basket asset. The output goes straight to your wallet in the same transaction.",
   },
   {
+    icon: "clock",
     t: "Keep your streak",
-    b: "Each paid period adds one to your streak. If a period closes without your payment, anyone can apply a slash: part of your bond, half burned and half shared with the members who paid.",
+    b: "Each paid period adds one to your streak. When a period closes unpaid, anyone can apply a slash: part of the bond, half burned and half shared with the members who paid.",
   },
   {
+    icon: "vote",
     t: "Vote on the basket",
     b: "Any member can propose a new basket. Members vote by burning $WIF. It passes if more $WIF is burned for it than against and at least half the members vote yes.",
   },
   {
+    icon: "flame",
     t: "Burn",
-    b: "Fees from every contribution are swapped for $WIF on Uniswap and sent to the burn address. Every burn is a public transaction.",
+    b: "Every day the fee pool is swapped for $WIF on Uniswap and sent to the burn address. Every burn is a public transaction.",
   },
 ];
 
 const FACTS = [
   ["Chain", "Robinhood Chain mainnet, chain id 4663"],
-  ["Swaps", "Uniswap v3 SwapRouter02, USDG pools for each Stock Token"],
+  ["Swaps", "Uniswap v3 SwapRouter02, USDG pools for each asset"],
   ["Burn route", "USDG to WETH (0.05%) to $WIF (1%)"],
   ["Fee", "1% of each contribution, capped at 2% in the contract"],
   ["Custody", "None. Bought assets go to the member's wallet in the same transaction"],
-  ["Source", "Public, MIT licensed, verified on Blockscout"],
+  ["Source", "Public on GitHub, MIT license"],
 ];
 
 export default function HowPage() {
   return (
-    <div className="mx-auto max-w-3xl space-y-10">
-      <section>
-        <h1 className="text-3xl font-semibold tracking-tight">How Equalship works</h1>
-        <p className="mt-3 text-muted">
-          Saving is easier with people watching. Equalship gives a group of friends a shared goal, a real cost for
-          skipping a week, and real ownership at the end of it.
-        </p>
-      </section>
-      <ol className="space-y-4">
-        {STEPS.map((s, i) => (
-          <li key={s.t} className="card flex gap-4">
-            <span className="font-mono text-sm text-muted">{String(i + 1).padStart(2, "0")}</span>
-            <div>
-              <h2 className="font-semibold">{s.t}</h2>
-              <p className="mt-1 text-sm leading-relaxed text-muted">{s.b}</p>
-            </div>
-          </li>
-        ))}
-      </ol>
-      <section className="card">
-        <h2 className="font-semibold">Details</h2>
-        <dl className="mt-3 grid gap-x-6 gap-y-2 text-sm md:grid-cols-[160px_1fr]">
+    <>
+      <PageHero
+        eyebrow="How it works"
+        title={
+          <>
+            Saving is easier with people <span className="serif-accent text-brand-2">watching</span>
+          </>
+        }
+        sub="Equalship gives a group a shared goal, a real cost for skipping a week, and real ownership at the end of it."
+      >
+        <Link href="/circles" className="btn btn-primary">
+          Find a circle
+        </Link>
+        <Link href="/faq" className="btn">
+          Read the FAQ
+        </Link>
+      </PageHero>
+      <Container className="py-14">
+        <ol className="relative space-y-5 before:absolute before:bottom-6 before:left-[27px] before:top-6 before:w-px before:bg-line">
+          {STEPS.map((s, i) => (
+            <li key={s.t} className="relative flex gap-5">
+              <span className="z-10 grid h-14 w-14 shrink-0 place-items-center rounded-2xl border border-line bg-card text-brand-2">
+                <Icon name={s.icon} className="h-6 w-6" />
+              </span>
+              <div className="card flex-1">
+                <p className="label">Step {i + 1}</p>
+                <h2 className="display mt-2 text-2xl">{s.t}</h2>
+                <p className="mt-2 leading-relaxed text-muted">{s.b}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </Container>
+      <Container className="pb-10">
+        <SectionHead align="left" eyebrow="Details" title="Under the hood" />
+        <dl className="card mt-8 grid gap-x-8 gap-y-4 text-sm md:grid-cols-[200px_1fr]">
           {FACTS.map(([k, v]) => (
             <div key={k} className="contents">
               <dt className="text-muted">{k}</dt>
@@ -67,17 +94,7 @@ export default function HowPage() {
             </div>
           ))}
         </dl>
-      </section>
-      <section className="card text-sm text-muted">
-        <h2 className="font-semibold text-ink">Who can use Stock Tokens</h2>
-        <p className="mt-2">
-          Stock Tokens are not available to US persons and are restricted in some countries. Equalship asks you to
-          confirm before a basket with Stock Tokens buys anything. Anyone can run a WETH basket instead.
-        </p>
-      </section>
-      <Link href="/circles" className="btn btn-primary">
-        Find a circle
-      </Link>
-    </div>
+      </Container>
+    </>
   );
 }

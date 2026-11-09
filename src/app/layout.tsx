@@ -1,43 +1,54 @@
-import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
-import Link from "next/link";
+import type { Metadata, Viewport } from "next";
+import { Instrument_Serif, JetBrains_Mono, Plus_Jakarta_Sans, Space_Grotesk } from "next/font/google";
+import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { Providers } from "@/components/Providers";
+import { themeScript } from "@/components/ThemeToggle";
 import "./globals.css";
 
-const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
+const display = Space_Grotesk({ variable: "--font-display-face", subsets: ["latin"], weight: ["500", "700"] });
+const body = Plus_Jakarta_Sans({ variable: "--font-body", subsets: ["latin"] });
+const serif = Instrument_Serif({ variable: "--font-serif-face", subsets: ["latin"], weight: "400", style: ["italic"] });
 const mono = JetBrains_Mono({ variable: "--font-mono-face", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Equalship: save together, own together",
+  metadataBase: new URL("https://equalship.vercel.app"),
+  title: { default: "Equalship: save together, own together", template: "%s | Equalship" },
   description:
     "Savings circles on Robinhood Chain. Friends put in a small amount of USDG every week, it buys Stock Tokens into each member's own wallet, and $WIF is the bond, the vote and the burn.",
+  openGraph: {
+    title: "Equalship: save together, own together",
+    description: "Savings circles that buy Stock Tokens into your own wallet, held together by $WIF.",
+    url: "https://equalship.vercel.app",
+    siteName: "Equalship",
+    type: "website",
+  },
+  twitter: { card: "summary_large_image", title: "Equalship", description: "Save together. Own together." },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: dark)", color: "#0b0a10" },
+    { media: "(prefers-color-scheme: light)", color: "#faf9fc" },
+  ],
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${mono.variable}`}>
+    <html
+      lang="en"
+      data-theme="dark"
+      suppressHydrationWarning
+      className={`${display.variable} ${body.variable} ${serif.variable} ${mono.variable}`}
+    >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body className="flex min-h-screen flex-col">
         <Providers>
           <Header />
-          <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">{children}</main>
-          <footer className="border-t border-line">
-            <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-6 text-xs text-muted md:flex-row md:justify-between">
-              <p>
-                Equalship is an independent project built on Robinhood Chain. It is not affiliated with or endorsed
-                by Robinhood Markets, Inc. Stock Tokens are not available to US persons or in restricted regions.
-                $WIF has no promise of value or return.
-              </p>
-              <div className="flex shrink-0 gap-4 whitespace-nowrap">
-                <Link className="link" href="/how">
-                  How it works
-                </Link>
-                <a className="link" href="https://github.com/angelraph/equalship" target="_blank" rel="noreferrer">
-                  Source
-                </a>
-              </div>
-            </div>
-          </footer>
+          <main className="w-full flex-1">{children}</main>
+          <Footer />
         </Providers>
       </body>
     </html>
