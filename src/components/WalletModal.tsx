@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { errorText } from "@/lib/format";
 import { useWallet, useWallets, type WalletInfo } from "@/lib/wallet";
 import { LogoMark } from "./Logo";
@@ -23,7 +24,13 @@ export function WalletModal() {
     if (!pickerOpen) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && closePicker();
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    // keep the page behind the dialog still
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = overflow;
+    };
   }, [pickerOpen, closePicker]);
 
   if (!pickerOpen) return null;
@@ -40,13 +47,15 @@ export function WalletModal() {
     }
   }
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 backdrop-blur-sm sm:items-center" onClick={closePicker}>
+  // Rendered on document.body: the header uses backdrop-filter, which would otherwise
+  // become the containing block for this fixed overlay and clip it to the header.
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/60 p-4 backdrop-blur-sm sm:items-center" onClick={closePicker}>
       <div
         role="dialog"
         aria-modal="true"
         aria-label="Connect a wallet"
-        className="rise w-full max-w-md rounded-[2rem] border border-line bg-card p-6 shadow-2xl"
+        className="rise max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-[2rem] border border-line bg-card p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between">
@@ -105,6 +114,7 @@ export function WalletModal() {
           signing. Approvals are always for the exact amount. <Link className="link" href="/security" onClick={closePicker}>How we keep you safe</Link>
         </p>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
