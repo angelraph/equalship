@@ -146,7 +146,7 @@ body {
     @apply font-serif font-normal italic tracking-normal;
   }
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-full border border-line bg-card px-5 py-2.5 text-sm font-semibold transition hover:border-line-strong disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full border border-line bg-card px-5 py-2.5 text-sm font-semibold transition hover:border-line-strong disabled:cursor-not-allowed disabled:opacity-50;
   }
   .btn-primary {
     @apply border-transparent bg-brand text-white shadow-[0_8px_30px_-8px_var(--glow)] hover:bg-brand-deep;

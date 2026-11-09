@@ -139,7 +139,16 @@ export function WalletButton({ big = false }: { big?: boolean }) {
   if (!address) {
     return (
       <button className={`btn btn-primary ${big ? "px-7 py-3.5 text-base" : ""}`} disabled={connecting} onClick={() => connect()}>
-        {connecting ? "Connecting" : "Connect wallet"}
+        {connecting ? (
+          "Connecting"
+        ) : big ? (
+          "Connect wallet"
+        ) : (
+          <>
+            <span className="sm:hidden">Connect</span>
+            <span className="hidden sm:inline">Connect wallet</span>
+          </>
+        )}
       </button>
     );
   }
