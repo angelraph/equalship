@@ -60,7 +60,7 @@ export function CircleView({ id }: { id: bigint }) {
           <p className="font-mono text-xs text-muted">Circle #{id.toString()}</p>
           <h1 className="text-3xl font-semibold tracking-tight">{c.name}</h1>
           <p className="mt-2 text-muted">
-            {usd(c.contribution)} every {periodLabel(c.period)}. Bond {wifFmt(c.bond)} $WIF. Missing a{" "}
+            {usd(c.contribution)} every {periodLabel(c.period)}. Bond {wifFmt(c.bond)} $WIF. Missing {periodLabel(c.period) === "hour" ? "an" : "a"}{" "}
             {periodLabel(c.period)} costs {c.slashBps / 100}% of the bond.
           </p>
         </div>
