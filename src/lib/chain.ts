@@ -19,7 +19,8 @@ export const EXPLORER = "https://robinhoodchain.blockscout.com";
 export const REPO = "https://github.com/angelraph/equalship";
 
 export const ADDR = {
-  equalship: (process.env.NEXT_PUBLIC_EQUALSHIP_ADDRESS || "") as Address | "",
+  // strip stray whitespace or a byte order mark so a pasted value cannot break every read
+  equalship: (process.env.NEXT_PUBLIC_EQUALSHIP_ADDRESS || "").replace(/[^0-9a-fA-Fx]/g, "") as Address | "",
   usdg: "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
   weth: "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73",
   wif: "0x5173b8eA6923c2d40267890D45C46a3480954773",
