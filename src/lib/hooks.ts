@@ -17,6 +17,8 @@ export function useStats() {
     "totalContributions",
     "circleCount",
     "feePool",
+    "totalBurned",
+    "wifBoughtForBonds",
   ] as const;
   const { data } = useReadContracts({
     contracts: names.map((functionName) => ({ ...ship, functionName })),
@@ -32,6 +34,8 @@ export function useStats() {
     totalContributions: get(5),
     circleCount: get(6),
     feePool: get(7),
+    totalBurned: get(8),
+    wifBoughtForBonds: get(9),
   };
 }
 

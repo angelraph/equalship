@@ -44,7 +44,7 @@ export default function AboutPage() {
 
       <h2>What comes next</h2>
       <ul>
-        <li>Reminders before a period closes, so nobody loses a streak by accident.</li>
+        <li>Push reminders on top of the calendar reminders, so nobody loses a streak by accident.</li>
         <li>Gas free saving through sponsored transactions, so newcomers only need USDG.</li>
         <li>Rotating payouts for circles that want the classic tontine model next to shared ownership.</li>
         <li>Integrations that let other apps use Proof of Commitment.</li>

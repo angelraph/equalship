@@ -23,6 +23,7 @@ export const LEARN = [
   { href: "/security", label: "Security", note: "What protects your money" },
   { href: "/fees", label: "Fees", note: "One fee, and where it goes" },
   { href: "/developers", label: "Developers", note: "Contracts and the registry" },
+  { href: "/fair", label: "Stop vote farming", note: "Proof of Commitment for votes" },
   { href: "/about", label: "About", note: "Why we built this" },
 ];
 

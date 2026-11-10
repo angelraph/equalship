@@ -7,10 +7,7 @@ import { useStats } from "@/lib/hooks";
 /** Numbers read straight from the Equalship contract. */
 export function LiveStats({ compact = false }: { compact?: boolean }) {
   const s = useStats();
-  const burned =
-    s.burnedFromFees !== undefined && s.burnedFromSlashes !== undefined && s.burnedFromVotes !== undefined
-      ? s.burnedFromFees + s.burnedFromSlashes + s.burnedFromVotes
-      : undefined;
+  const burned = s.totalBurned;
 
   const tiles = [
     { label: "Saved into assets", value: usd(s.totalSaved) },
@@ -32,7 +29,7 @@ export function LiveStats({ compact = false }: { compact?: boolean }) {
       </div>
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-muted">
         <span className="flex items-center gap-2">
-          <span className="live-dot" /> Live from the contract on Robinhood Chain. {usd(s.feePool)} in fees waiting to buy and burn $WIF.
+          <span className="live-dot" /> Live from the contract on Robinhood Chain. {wifFmt(s.wifBoughtForBonds)} $WIF bought from the market for bonds, {usd(s.feePool)} in fees waiting to buy and burn.
         </span>
         {isDeployed && (
           <a className="link" href={`${EXPLORER}/address/${ADDR.equalship}`} target="_blank" rel="noreferrer">

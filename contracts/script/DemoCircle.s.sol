@@ -12,16 +12,18 @@ interface IQuoterV2 {
         returns (uint256 amountOut, uint160[] memory, uint32[] memory, uint256);
 }
 
-/// @notice Creates a demo circle on a deployed Equalship and makes the first save.
+/// @notice Creates the flagship circle on a deployed Equalship and makes the first save, paid in ETH.
 /// forge script script/DemoCircle.s.sol --sig "run(address)" <EQUALSHIP> --rpc-url <RPC> --broadcast --interactive
-/// Forge asks for the wallet key. Optional env: CONTRIBUTION (USDG, 6 decimals, default 1 USDG),
-/// BOND (WIF, 18 decimals, default 1000 WIF), PERIOD (seconds, default 3600).
+/// Defaults are safe for the creator's money: a daily period, no slashing (the bond always comes back in
+/// full on leave), a 5 WIF bond and a 1 USDG save.
+/// Optional env: CONTRIBUTION (USDG, 6 decimals), BOND (WIF, 18 decimals), PERIOD (seconds), SLASH_BPS.
 contract DemoCircle is Script {
     function run(address shipAddress) external returns (uint256 circleId) {
         Equalship ship = Equalship(shipAddress);
         uint128 contribution = uint128(vm.envOr("CONTRIBUTION", uint256(1e6)));
-        uint128 bond = uint128(vm.envOr("BOND", uint256(1000e18)));
-        uint32 period = uint32(vm.envOr("PERIOD", uint256(3600)));
+        uint128 bond = uint128(vm.envOr("BOND", uint256(5e18)));
+        uint32 period = uint32(vm.envOr("PERIOD", uint256(1 days)));
+        uint16 slashBps = uint16(vm.envOr("SLASH_BPS", uint256(0)));
 
         Equalship.Leg[] memory legs = new Equalship.Leg[](2);
         legs[0] = Equalship.Leg(Addresses.NVDA, 5000, abi.encodePacked(Addresses.USDG, uint24(500), Addresses.NVDA));
@@ -36,13 +38,17 @@ contract DemoCircle is Script {
         minOuts[0] = (q0 * 9800) / 10_000;
         minOuts[1] = (q1 * 9800) / 10_000;
 
+        // ETH needed for the save: enough for the contribution plus 5%, the extra USDG is refunded.
+        (uint256 usdgPerMilliEth,,,) = IQuoterV2(Addresses.QUOTER_V2).quoteExactInput(ship.ethToUsdg(), 1e15);
+        uint256 ethIn = (uint256(contribution) * 105 * 1e15) / (100 * usdgPerMilliEth);
+        console2.log("ETH for the first save (wei)", ethIn);
+
         vm.startBroadcast();
         IERC20(Addresses.WIF).approve(address(ship), bond);
-        IERC20(Addresses.USDG).approve(address(ship), contribution);
-        circleId = ship.createCircle("Equalship Demo", contribution, bond, period, 20, 2500, legs);
-        ship.contribute(circleId, minOuts);
+        circleId = ship.createCircle("WIF Holders Savings Circle", contribution, bond, period, 50, slashBps, legs);
+        ship.contributeWithETH{value: ethIn}(circleId, contribution, minOuts);
         vm.stopBroadcast();
 
-        console2.log("Demo circle id", circleId);
+        console2.log("Flagship circle id", circleId);
     }
 }

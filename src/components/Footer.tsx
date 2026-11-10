@@ -10,6 +10,7 @@ const COLUMNS = [
       { href: "/markets", label: "Markets" },
       { href: "/wif", label: "$WIF burn" },
       { href: "/proof", label: "Proof of Commitment" },
+      { href: "/fair", label: "Stop vote farming" },
     ],
   },
   {

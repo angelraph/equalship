@@ -151,7 +151,6 @@ export const BURN_PATH = encodePacked(
 );
 
 export const PERIODS = [
-  { label: "Every hour (demo)", seconds: 3600 },
   { label: "Every day", seconds: 86_400 },
   { label: "Every week", seconds: 604_800 },
   { label: "Every two weeks", seconds: 1_209_600 },

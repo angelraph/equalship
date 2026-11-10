@@ -3,17 +3,14 @@
 import { useState } from "react";
 import { isAddress, type Address } from "viem";
 import { useAccount, usePublicClient, useReadContract, useReadContracts, useWriteContract } from "@/lib/wallet";
-import { erc20Abi, quoterAbi } from "@/lib/abis";
+import { erc20Abi } from "@/lib/abis";
 import { ADDR, EXPLORER, assetByAddress, isDeployed, periodLabel } from "@/lib/chain";
-import { countdown, fmt, short, usd, wifFmt } from "@/lib/format";
+import { countdown, short, usd, wifFmt } from "@/lib/format";
 import { ship, useCircle, useNow } from "@/lib/hooks";
 import { useTx } from "@/lib/useTx";
 import { BasketVote } from "./BasketVote";
-import { WalletButton } from "./Header";
-import { RegionGate, useRegionOk } from "./RegionGate";
 import { TxStatus } from "./TxStatus";
-
-const SLIPPAGE_BPS = 150n; // 1.5%
+import { YourPanel } from "./YourPanel";
 
 export function CircleView({ id }: { id: bigint }) {
   const { address } = useAccount();
@@ -61,8 +58,10 @@ export function CircleView({ id }: { id: bigint }) {
           <p className="font-mono text-xs text-muted">Circle #{id.toString()}</p>
           <h1 className="display mt-1 text-5xl">{c.name}</h1>
           <p className="mt-2 text-muted">
-            {usd(c.contribution)} every {periodLabel(c.period)}. Bond {wifFmt(c.bond)} $WIF. Missing {periodLabel(c.period) === "hour" ? "an" : "a"}{" "}
-            {periodLabel(c.period)} costs {c.slashBps / 100}% of the bond.
+            {usd(c.contribution)} every {periodLabel(c.period)}. Bond {wifFmt(c.bond)} $WIF.{" "}
+            {c.slashBps === 0
+              ? "No slashing: the bond always comes back in full when you leave."
+              : `Missing a ${periodLabel(c.period)} past the grace window costs ${c.slashBps / 100}% of the bond.`}
           </p>
         </div>
         <div className="card py-3 text-right">
@@ -89,11 +88,11 @@ export function CircleView({ id }: { id: bigint }) {
 
       <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
         <section className="space-y-6">
-          <MembersTable id={id} rows={members} currentPeriod={p} />
+          <MembersTable id={id} rows={members} currentPeriod={p} noSlash={c.slashBps === 0} />
           <BasketVote id={id} circle={c} isMember={!!me?.m?.active} />
         </section>
         <aside className="space-y-4">
-          <YourPanel id={id} circle={c} legs={legs} me={me} period={p} />
+          <YourPanel id={id} circle={c} legs={legs} me={me?.m} />
           <InvitePanel id={id} bond={c.bond} />
         </aside>
       </div>
@@ -110,8 +109,6 @@ function Stat({ label, value }: { label: string; value: string }) {
   );
 }
 
-type Circle = NonNullable<ReturnType<typeof useCircle>["data"]>[0];
-type Legs = NonNullable<ReturnType<typeof useCircle>["data"]>[1];
 type MemberRow = {
   addr: Address;
   m?: {
@@ -127,7 +124,17 @@ type MemberRow = {
   missed: bigint;
 };
 
-function MembersTable({ id, rows, currentPeriod }: { id: bigint; rows: MemberRow[]; currentPeriod: bigint }) {
+function MembersTable({
+  id,
+  rows,
+  currentPeriod,
+  noSlash,
+}: {
+  id: bigint;
+  rows: MemberRow[];
+  currentPeriod: bigint;
+  noSlash: boolean;
+}) {
   const { writeContractAsync } = useWriteContract();
   const { state, run } = useTx();
   const sorted = [...rows].sort((a, b) => (b.m?.streak ?? 0) - (a.m?.streak ?? 0));
@@ -190,185 +197,11 @@ function MembersTable({ id, rows, currentPeriod }: { id: bigint; rows: MemberRow
         </tbody>
       </table>
       <p className="mt-3 text-xs text-muted">
-        Anyone can apply a slash once a period closes unpaid. Half of the slashed $WIF is burned, half is shared by the
-        members still in the circle.
+        {noSlash
+          ? "This circle never slashes. A missed period only resets that member's streak, and every bond comes back in full."
+          : "Anyone can apply a slash once a period is missed past its grace window. Half of the slashed $WIF is burned, half is shared by the members still in the circle."}
       </p>
       <TxStatus state={state} />
-    </div>
-  );
-}
-
-function YourPanel({
-  id,
-  circle,
-  legs,
-  me,
-  period,
-}: {
-  id: bigint;
-  circle: Circle;
-  legs: Legs;
-  me?: MemberRow;
-  period: bigint;
-}) {
-  const { address } = useAccount();
-  const client = usePublicClient();
-  const { writeContractAsync } = useWriteContract();
-  const { state, run } = useTx();
-  const regionOk = useRegionOk();
-  const needsStock = legs.some((l) => assetByAddress(l.token)?.stock !== false);
-
-  const { data: bal } = useReadContracts({
-    contracts: [
-      { address: ADDR.usdg, abi: erc20Abi, functionName: "balanceOf", args: [address ?? ADDR.dead] },
-      { address: ADDR.wif, abi: erc20Abi, functionName: "balanceOf", args: [address ?? ADDR.dead] },
-    ],
-    query: { enabled: !!address },
-  });
-  const usdgBal = bal?.[0]?.status === "success" ? (bal[0].result as bigint) : undefined;
-  const wifBal = bal?.[1]?.status === "success" ? (bal[1].result as bigint) : undefined;
-
-  const { data: reward } = useReadContract({
-    ...ship,
-    functionName: "pendingReward",
-    args: [id, address ?? ADDR.dead],
-    query: { enabled: !!address },
-  });
-
-  const active = !!me?.m?.active;
-  const paidNow = active && me!.m!.nextDue > period;
-  const full = circle.memberCount >= circle.maxMembers;
-
-  async function ensureAllowance(token: Address, amount: bigint, label: string) {
-    const allowance = await client!.readContract({
-      address: token,
-      abi: erc20Abi,
-      functionName: "allowance",
-      args: [address!, ship.address],
-    });
-    return allowance >= amount
-      ? []
-      : [
-          {
-            label,
-            send: () => writeContractAsync({ address: token, abi: erc20Abi, functionName: "approve", args: [ship.address, amount] }),
-          },
-        ];
-  }
-
-  async function join() {
-    const steps = await ensureAllowance(ADDR.wif, circle.bond, "Approve $WIF bond");
-    await run([...steps, { label: "Join circle", send: () => writeContractAsync({ ...ship, functionName: "join", args: [id] }) }]);
-  }
-
-  async function contribute() {
-    const amount = circle.contribution;
-    const feeBps = await client!.readContract({ ...ship, functionName: "feeBps" });
-    const rest = amount - (amount * BigInt(feeBps)) / 10_000n;
-
-    let spent = 0n;
-    const minOuts: bigint[] = [];
-    for (let i = 0; i < legs.length; i++) {
-      const legIn = i === legs.length - 1 ? rest - spent : (rest * BigInt(legs[i].weightBps)) / 10_000n;
-      spent += legIn;
-      const { result } = await client!.simulateContract({
-        address: ADDR.quoter,
-        abi: quoterAbi,
-        functionName: "quoteExactInput",
-        args: [legs[i].path, legIn],
-      });
-      minOuts.push((result[0] * (10_000n - SLIPPAGE_BPS)) / 10_000n);
-    }
-    const steps = await ensureAllowance(ADDR.usdg, amount, "Approve USDG");
-    await run([
-      ...steps,
-      {
-        label: "Save and buy basket",
-        send: () => writeContractAsync({ ...ship, functionName: "contribute", args: [id, minOuts] }),
-      },
-    ]);
-  }
-
-  return (
-    <div className="card space-y-4">
-      <h2 className="font-semibold">You</h2>
-      {!address && (
-        <>
-          <p className="text-sm text-muted">Connect a wallet to join or save.</p>
-          <WalletButton />
-        </>
-      )}
-      {address && (
-        <div className="grid grid-cols-2 gap-2 text-sm">
-          <div>
-            <p className="label">USDG</p>
-            <p className="font-mono">{fmt(usdgBal, 6)}</p>
-          </div>
-          <div>
-            <p className="label">$WIF</p>
-            <p className="font-mono">{wifFmt(wifBal)}</p>
-          </div>
-        </div>
-      )}
-
-      {address && !active && (
-        <>
-          <p className="text-sm text-muted">
-            Bond {wifFmt(circle.bond)} $WIF to join. You get it back when you leave, minus any slashes for missed{" "}
-            {periodLabel(circle.period)}s.
-          </p>
-          <button className="btn btn-primary w-full" disabled={full || state.status === "pending"} onClick={join}>
-            {full ? "Circle is full" : "Bond and join"}
-          </button>
-        </>
-      )}
-
-      {active && me?.m && (
-        <>
-          <div className="grid grid-cols-3 gap-2 text-center">
-            <div className="rounded-lg bg-save-soft p-2">
-              <p className="font-mono text-xl font-semibold text-save">{me.m.streak}</p>
-              <p className="text-xs text-muted">streak</p>
-            </div>
-            <div className="rounded-lg bg-paper p-2">
-              <p className="font-mono text-xl font-semibold">{me.m.paidCount}</p>
-              <p className="text-xs text-muted">paid</p>
-            </div>
-            <div className="rounded-lg bg-paper p-2">
-              <p className="font-mono text-xl font-semibold">{wifFmt(me.m.bondLeft)}</p>
-              <p className="text-xs text-muted">bond left</p>
-            </div>
-          </div>
-          {needsStock && !paidNow && <RegionGate />}
-          <button
-            className="btn btn-save w-full py-3"
-            disabled={paidNow || state.status === "pending" || (needsStock && !regionOk)}
-            onClick={contribute}
-          >
-            {paidNow ? `Paid for this ${periodLabel(circle.period)}` : `Save ${usd(circle.contribution)} now`}
-          </button>
-          <div className="flex gap-2">
-            <button
-              className="btn flex-1"
-              disabled={!reward || state.status === "pending"}
-              onClick={() => run([{ label: "Claim rewards", send: () => writeContractAsync({ ...ship, functionName: "claim", args: [id] }) }])}
-            >
-              Claim {wifFmt(reward)} $WIF
-            </button>
-            <button
-              className="btn"
-              disabled={state.status === "pending"}
-              onClick={() => run([{ label: "Leave circle", send: () => writeContractAsync({ ...ship, functionName: "leave", args: [id] }) }])}
-            >
-              Leave
-            </button>
-          </div>
-        </>
-      )}
-      <TxStatus state={state} />
-      {state.status === "done" && state.label === "Save and buy basket" && (
-        <p className="text-sm text-save">Your Stock Tokens are in your wallet. See you next {periodLabel(circle.period)}.</p>
-      )}
     </div>
   );
 }

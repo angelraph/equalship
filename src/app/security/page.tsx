@@ -18,7 +18,9 @@ const CANNOT = [
   "Move your Stock Tokens. It never holds them.",
   "Spend more than the amount you approved for an action.",
   "Raise the fee above 2%. That cap is in the contract code.",
-  "Send a bond anywhere other than back to you, to the burn address, or to the members of your circle.",
+  "Send a bond anywhere other than back to you, into a burn, or to the members of your circle.",
+  "Slash anything in a circle with no slashing. Those bonds always come back in full.",
+  "Save for you unless you turned auto-save on. Auto-save buys only into your own wallet.",
   "Be upgraded or replaced behind your back. There is no proxy.",
 ];
 
@@ -86,7 +88,7 @@ export default function SecurityPage() {
       <p>
         Connecting only shares your address. When you act, your wallet shows one of these and nothing else: an
         approval for the exact USDG or $WIF amount of that action, or a call to the Equalship contract above
-        (createCircle, join, joinFor, contribute, slash, claim, leave, proposeBasket, vote, executeBasket). Equalship
+        (createCircle, join, joinWithETH, joinFor, contribute, contributeWithETH, setAutoSave, slash, claim, leave, proposeBasket, vote, executeBasket). Equalship
         never asks for unlimited approvals, signatures of messages you cannot read, or your seed phrase. If you ever
         see a request that does not match this list, reject it.
       </p>
@@ -112,6 +114,7 @@ export default function SecurityPage() {
         <li>The contract has not had a paid third party audit yet. Start small.</li>
         <li>The buyback is run by a keeper wallet so nobody can force a burn at a bad price. If the keeper stops, fees wait in the contract until it runs again. Fees can never be withdrawn by anyone.</li>
         <li>The owner can change the keeper and the fee, with the fee capped at 2%.</li>
+        <li>Auto-save is run by the same keeper, only for members who turned it on, from the USDG they approved. Turn it off or remove the approval at any time.</li>
         <li>The $WIF pool is small, so large buybacks would move the price. The keeper uses a slippage limit.</li>
       </ul>
 

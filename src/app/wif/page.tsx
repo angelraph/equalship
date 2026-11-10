@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 const LOOP = [
   { icon: "lock", title: "Bond", body: "Joining a circle locks the circle's $WIF bond for as long as you stay." },
   { icon: "wallet", title: "Save", body: "Each save keeps a 1% fee in USDG for the buyback." },
-  { icon: "flame", title: "Buy and burn", body: "Every day the fee pool buys $WIF on Uniswap and sends it to the burn address." },
+  { icon: "flame", title: "Buy and burn", body: "Every day the fee pool buys $WIF on Uniswap and burns it, so the total supply goes down." },
   { icon: "users", title: "Slash", body: "A missed period burns half of the penalty and pays the other half to those who stayed." },
   { icon: "vote", title: "Vote", body: "Basket votes cost $WIF and every vote is burned." },
   { icon: "check", title: "Proof", body: "Long streaks become public proof that other apps can trust." },

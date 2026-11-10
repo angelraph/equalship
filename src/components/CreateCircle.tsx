@@ -24,7 +24,7 @@ export function CreateCircle() {
   const [bond, setBond] = useState("5000");
   const [period, setPeriod] = useState<number>(PERIODS[2].seconds);
   const [maxMembers, setMaxMembers] = useState(10);
-  const [slash, setSlash] = useState(25);
+  const [slash, setSlash] = useState(0);
   const [weights, setWeights] = useState<Weights>({ NVDA: 50, SPY: 50 });
   const [status, setStatus] = useState("");
   const [busy, setBusy] = useState(false);
@@ -93,7 +93,7 @@ export function CreateCircle() {
     Number(bond) > 0 &&
     maxMembers >= 2 &&
     maxMembers <= 50 &&
-    slash >= 5 &&
+    slash >= 0 &&
     slash <= 50 &&
     basket.valid &&
     basket.picked.length <= 5;
@@ -144,11 +144,11 @@ export function CreateCircle() {
             onChange={(e) => setMaxMembers(Number(e.target.value))}
           />
         </Field>
-        <Field label="Slash per miss (%)">
+        <Field label="Slash per miss (%), 0 = never">
           <input
             className="input"
             type="number"
-            min={5}
+            min={0}
             max={50}
             value={slash}
             onChange={(e) => setSlash(Number(e.target.value))}

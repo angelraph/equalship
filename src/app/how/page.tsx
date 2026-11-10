@@ -11,12 +11,12 @@ const STEPS = [
   {
     icon: "users",
     t: "Start or join a circle",
-    b: "A circle sets the amount (from 1 USDG), how often you pay (hourly for demos, daily, weekly or every two weeks), the $WIF bond, the slash rate, and a basket of up to five assets such as NVDA, AAPL, TSLA, MSFT, SPY, QQQ or WETH.",
+    b: "A circle sets the amount (from 1 USDG), how often you pay (daily, weekly or every two weeks), the $WIF bond, whether missed periods are slashed, and a basket of up to five assets such as NVDA, AAPL, TSLA, MSFT, SPY, QQQ or WETH.",
   },
   {
     icon: "lock",
     t: "Bond $WIF",
-    b: "Joining locks the circle's bond in the contract. It comes back when you leave, minus slashes. A friend can pay your bond with Sponsor a friend, so someone with no $WIF can still start.",
+    b: "Joining locks the circle's bond in the contract. Pay with $WIF, or pay with ETH and the contract buys the bond for you. It comes back whenever you leave. A friend can pay your bond with Sponsor a friend, so someone with no $WIF can still start.",
   },
   {
     icon: "wallet",
@@ -26,7 +26,7 @@ const STEPS = [
   {
     icon: "clock",
     t: "Keep your streak",
-    b: "Each paid period adds one to your streak. When a period closes unpaid, anyone can apply a slash: part of the bond, half burned and half shared with the members who paid.",
+    b: "Each paid period adds one to your streak, and auto-save can do it for you. You have a grace window of a quarter period to save late. In circles with slashing, a period missed past the grace lets anyone apply a slash: part of the bond, half burned and half shared with the members who paid.",
   },
   {
     icon: "vote",
@@ -36,7 +36,7 @@ const STEPS = [
   {
     icon: "flame",
     t: "Burn",
-    b: "Every day the fee pool is swapped for $WIF on Uniswap and sent to the burn address. Every burn is a public transaction.",
+    b: "Every day the fee pool is swapped for $WIF on Uniswap and burned with $WIF's own burn function, which lowers the total supply. Every burn is a public transaction.",
   },
 ];
 

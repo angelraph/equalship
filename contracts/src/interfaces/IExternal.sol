@@ -9,7 +9,13 @@ interface IERC20 {
     function allowance(address owner, address spender) external view returns (uint256);
 }
 
+/// @notice $WIF is ERC20Burnable: burn() lowers totalSupply.
+interface IBurnable {
+    function burn(uint256 amount) external;
+}
+
 /// @notice Uniswap SwapRouter02 (v3 multi hop). Robinhood Chain: 0xcaf681a66d020601342297493863e78c959e5cb2
+/// When the path starts with WETH and msg.value covers amountIn, the router wraps the ETH itself.
 interface ISwapRouter02 {
     struct ExactInputParams {
         bytes path;

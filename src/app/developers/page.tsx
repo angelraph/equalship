@@ -26,8 +26,11 @@ require(
 const FUNCTIONS = [
   ["createCircle(name, contribution, bond, period, maxMembers, slashBps, legs)", "Start a circle and join it as the first member."],
   ["join(circleId) / joinFor(circleId, member)", "Bond $WIF to join, or pay a friend's bond."],
+  ["joinWithETH(circleId, minWifOut) / joinForWithETH", "Join with ETH: it buys the $WIF bond on Uniswap and refunds any extra."],
+  ["contributeWithETH(circleId, minUsdgOut, minOuts)", "Save with ETH: it buys the USDG and then the basket, all in one transaction."],
+  ["setAutoSave(circleId, on) / contributeFor", "Opt in to auto-save. Only the keeper can save for you, and only into your wallet."],
   ["contribute(circleId, minOuts)", "Save for this period. Buys every basket leg into the caller's wallet."],
-  ["slash(circleId, member)", "Settle missed periods for any member. Anyone can call it."],
+  ["slash(circleId, member)", "Settle periods missed past the grace window. Anyone can call it. No-slash circles only reset the streak."],
   ["claim(circleId) / leave(circleId)", "Take shared rewards, or leave with the rest of your bond."],
   ["proposeBasket / vote / executeBasket", "Change the basket by burning $WIF as votes."],
   ["profileOf(account) / isCommitted(...)", "The public Proof of Commitment registry."],

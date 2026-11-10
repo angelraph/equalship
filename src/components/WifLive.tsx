@@ -1,14 +1,19 @@
 "use client";
 
-import { isDeployed } from "@/lib/chain";
+import { erc20Abi } from "@/lib/abis";
+import { ADDR, isDeployed } from "@/lib/chain";
 import { usd, wifFmt } from "@/lib/format";
 import { useStats } from "@/lib/hooks";
 import { money, pct, useQuote } from "@/lib/useMarket";
+import { useReadContract } from "@/lib/wallet";
 import { PriceChart } from "./Charts";
+
+const GENESIS_SUPPLY = 1_000_000_000n * 10n ** 18n;
 
 export function WifLive() {
   const s = useStats();
   const { data: q } = useQuote("WIF");
+  const { data: supply } = useReadContract({ address: ADDR.wif, abi: erc20Abi, functionName: "totalSupply" });
   const burned =
     s.burnedFromFees !== undefined && s.burnedFromSlashes !== undefined && s.burnedFromVotes !== undefined
       ? s.burnedFromFees + s.burnedFromSlashes + s.burnedFromVotes
@@ -39,7 +44,7 @@ export function WifLive() {
         <div className="card">
           <p className="label">Burned by Equalship</p>
           <p className="mt-2 font-mono text-4xl font-semibold text-burn">{isDeployed ? wifFmt(burned) : "0"}</p>
-          <p className="text-xs text-muted">$WIF sent to 0x...dEaD</p>
+          <p className="text-xs text-muted">Burned with $WIF&apos;s own burn(), so the total supply goes down</p>
           <div className="mt-5 space-y-3">
             {rows.map((r) => (
               <div key={r.label}>
@@ -66,6 +71,13 @@ export function WifLive() {
             <p className="label">Fees to burn</p>
             <p className="mt-2 font-mono text-xl font-semibold">{usd(s.feePool)}</p>
           </div>
+        </div>
+        <div className="card">
+          <p className="label">$WIF total supply, live</p>
+          <p className="mt-2 font-mono text-xl font-semibold">{wifFmt(supply)}</p>
+          <p className="text-xs text-muted">
+            {supply !== undefined ? `${wifFmt(GENESIS_SUPPLY - supply)} burned by everyone since launch` : "..."}
+          </p>
         </div>
       </div>
     </div>

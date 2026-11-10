@@ -15,12 +15,16 @@ contract Deploy is Script {
         address keeper = vm.envOr("KEEPER", deployer);
         uint16 feeBps = uint16(vm.envOr("FEE_BPS", uint256(100)));
 
+        // ETH routes: WETH to $WIF through the 1% pool, WETH to USDG through the 0.01% pool
         ship = new Equalship(
             IERC20(Addresses.USDG),
             IERC20(Addresses.WIF),
+            Addresses.WETH,
             ISwapRouter02(Addresses.SWAP_ROUTER_02),
             keeper,
-            feeBps
+            feeBps,
+            10_000,
+            100
         );
         vm.stopBroadcast();
 

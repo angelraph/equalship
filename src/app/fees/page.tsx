@@ -7,8 +7,9 @@ export const metadata: Metadata = { title: "Fees", description: "Equalship has o
 const ROWS = [
   { what: "Saving (contribute)", fee: "1% of the contribution", goes: "Buys $WIF and burns it" },
   { what: "Creating or joining a circle", fee: "None", goes: "Your bond is held, not charged" },
-  { what: "Leaving a circle", fee: "None", goes: "Your bond comes back, minus slashes" },
-  { what: "Missing a period", fee: "The circle's slash rate of your bond", goes: "Half burned, half to members who paid" },
+  { what: "Leaving a circle", fee: "None", goes: "Your bond comes back, in full in no-slash circles" },
+  { what: "Missing a period", fee: "Nothing in no-slash circles. Otherwise the slash rate, after a grace window", goes: "Half burned, half to members who paid" },
+  { what: "Paying with ETH", fee: "The Uniswap pool fee for the ETH swap", goes: "Liquidity providers, any extra comes back to you" },
   { what: "Basket vote", fee: "The $WIF you choose to spend", goes: "Burned" },
   { what: "Uniswap swap", fee: "The pool fee, 0.01% to 0.3%", goes: "Liquidity providers" },
   { what: "Network gas", fee: "A few cents in ETH", goes: "Robinhood Chain" },
@@ -24,7 +25,7 @@ export default function FeesPage() {
             One fee. <span className="serif-accent text-brand-2">All</span> of it burns.
           </>
         }
-        sub="Equalship takes 1% of each contribution and nothing else. That 1% is never paid to anyone: it buys $WIF on Uniswap and sends it to the burn address."
+        sub="Equalship takes 1% of each contribution and nothing else. That 1% is never paid to anyone: it buys $WIF on Uniswap and burns it, lowering the total supply."
       />
       <Container className="py-14">
         <div className="overflow-x-auto rounded-3xl border border-line bg-card">

@@ -32,7 +32,7 @@ const STEPS = [
     n: "Step 3",
     icon: "shield",
     title: "Stay, or pay for leaving",
-    body: "Skip a period and part of your bond is slashed: half burned, half paid to the members who stayed. Leave any time with the rest.",
+    body: "Your bond comes back whenever you leave. Circles that turn on slashing take part of it for a missed period: half burned, half paid to the members who stayed.",
   },
 ];
 
@@ -104,15 +104,15 @@ const BENTO = [
   },
   {
     span: "",
-    title: "Hourly demo circles",
-    body: "Periods from one hour to a month, so you can try a full cycle today.",
+    title: "Join with just ETH",
+    body: "No USDG or $WIF needed to start. Your ETH buys the $WIF bond on Uniswap, so every new saver is a $WIF buyer.",
     href: "/circles",
     icon: "clock",
   },
   {
     span: "md:col-span-2",
-    title: "Slashing that rewards the people who stay",
-    body: "A missed period is settled in one transaction no matter how big the circle is. Half of the penalty burns, half flows to the savers who paid.",
+    title: "Auto-save, so you never miss a week",
+    body: "Turn it on once and the keeper saves for you every period, straight into your wallet, from a USDG approval you can remove any time. Late? There is a grace window before a period counts as missed.",
     href: "/how",
     icon: "users",
   },
@@ -288,6 +288,7 @@ export default function Home() {
                 <ul className="mt-3 space-y-2.5 text-sm text-white/60">
                   <li className="flex justify-between"><span>1% fee buyback</span><span className="font-mono text-[#ff7a45]">daily</span></li>
                   <li className="flex justify-between"><span>Missed period slash</span><span className="font-mono text-[#ff7a45]">50%</span></li>
+                  <li className="flex justify-between"><span>Every join with ETH</span><span className="font-mono text-[#ff7a45]">buys</span></li>
                   <li className="flex justify-between"><span>Basket votes</span><span className="font-mono text-[#ff7a45]">100%</span></li>
                   <li className="flex justify-between"><span>Every burn</span><span className="font-mono text-[#ff7a45]">public</span></li>
                 </ul>

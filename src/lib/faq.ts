@@ -14,7 +14,7 @@ export const FAQ_GROUPS: { title: string; items: Faq[] }[] = [
       },
       {
         q: "Do I need to be a crypto expert?",
-        a: "No. You need a browser wallet on Robinhood Chain, a little ETH for gas, USDG for your savings and $WIF for the bond. A friend can even pay your bond for you so you can start with only USDG.",
+        a: "No. You need a browser wallet on Robinhood Chain and some ETH. You can join and save with ETH alone: it buys the $WIF bond and the USDG for each save on Uniswap in the same transaction. A friend can also pay your bond for you.",
       },
       {
         q: "How much do I need to start?",
@@ -31,11 +31,11 @@ export const FAQ_GROUPS: { title: string; items: Faq[] }[] = [
       },
       {
         q: "Who holds my $WIF bond?",
-        a: "The Equalship contract holds it while you are a member. You get it back in full when you leave, minus any slashes for missed periods. Nobody, including us, can move it anywhere else.",
+        a: "The Equalship contract holds it while you are a member, and you can leave and take it back any day. In a circle with no slashing it always comes back in full. In a circle with slashing, it comes back minus the slash for any period you missed past the grace window. Nobody, including us, can move it anywhere else.",
       },
       {
         q: "What happens if I miss a period?",
-        a: "Once a period closes unpaid, anyone can apply a slash. The circle takes the slash percentage of your bond: half is burned forever, half is shared by the members who did pay. Your streak resets to zero.",
+        a: "You get a grace window of a quarter period after it closes to save late, with no penalty. After that your streak resets. If the circle has slashing turned on, anyone can apply a slash: the slash percentage of your bond, half burned forever and half shared by the members who paid. Circles with no slashing never touch your bond. Turn on auto-save and you will not miss at all.",
       },
       {
         q: "Can I leave whenever I want?",
@@ -52,7 +52,7 @@ export const FAQ_GROUPS: { title: string; items: Faq[] }[] = [
       },
       {
         q: "How does the buyback and burn work?",
-        a: "Every contribution keeps 1% in USDG. A daily job swaps that pool for $WIF on Uniswap and sends it to the burn address. Every burn is a public transaction you can check on Blockscout.",
+        a: "Every contribution keeps 1% in USDG. A daily job swaps that pool for $WIF on Uniswap and burns it with $WIF's own burn function, so the total supply really goes down. Every burn is a public transaction you can check on Blockscout.",
       },
       {
         q: "How does basket voting work?",

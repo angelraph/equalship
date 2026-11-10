@@ -332,6 +332,7 @@ export function useWriteContract() {
       abi: Abi;
       functionName: string;
       args?: readonly unknown[];
+      value?: bigint;
     }): Promise<Hash> => {
       if (!wallet || !address) throw new Error("Connect a wallet first");
       if (chainId !== robinhoodChain.id) await switchOn(wallet.provider);
@@ -343,6 +344,7 @@ export function useWriteContract() {
         functionName: params.functionName,
         args: params.args ?? [],
         account: address,
+        value: params.value,
       });
       return client.writeContract(request);
     },
@@ -353,12 +355,14 @@ export function useWriteContract() {
       abi: abi;
       functionName: fn;
       args?: ContractFunctionArgs<abi, "nonpayable" | "payable", fn>;
+      value?: bigint;
     }) =>
       mutation.mutateAsync({
         address: params.address,
         abi: params.abi as Abi,
         functionName: params.functionName as string,
         args: params.args as readonly unknown[] | undefined,
+        value: params.value,
       }),
     [mutation],
   );
